@@ -1,5 +1,7 @@
 package edu.hm.networks2.salsify.sender;
 
-public interface Salsify {
+public interface ISalsify {
 
+	void start();
+	
 }

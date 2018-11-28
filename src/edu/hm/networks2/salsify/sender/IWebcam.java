@@ -1,7 +1,7 @@
 package edu.hm.networks2.salsify.sender;
 
-public interface Webcam {
+public interface IWebcam {
 	
-	void getFrame();
+	void start();
 	
 }
