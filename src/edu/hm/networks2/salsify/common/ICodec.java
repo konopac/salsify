@@ -18,6 +18,18 @@ public interface ICodec {
      */
     Optional<byte[]> encode(Optional<BufferedImage> state, BufferedImage frame, int quality);
 
-    BufferedImage decode(Optional<BufferedImage> state, BufferedImage frame);
+    /**
+     * Decode an image. The decoding operations is the opposite of the encode
+     * operation. It will decode the provided jpeg and in case a state is given
+     * it will perform the reverse operation to the difference calculation on the
+     * decoder state.
+     * 
+     * @param state The state of the decoder.
+     * @param encodedFrame The jpeg encoded frame which will be decoded.
+     * 
+     * @return Optional containing a BufferedImaged in case everything was
+     * successful.
+     */
+    Optional<BufferedImage> decode(Optional<BufferedImage> state, byte[] encodedFrame);
 	
 }

@@ -3,10 +3,14 @@ package edu.hm.networks2.salsify.common.implementation;
 import java.awt.image.BufferedImage;
 
 import edu.hm.networks2.salsify.common.ICodec;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -53,9 +57,32 @@ public class Codec implements ICodec {
     }
 
     @Override
-    public BufferedImage decode(Optional<BufferedImage> state, BufferedImage frame) {
-        System.out.println("decoding frame " + frame);
-        return null;
+    public Optional<BufferedImage> decode(Optional<BufferedImage> state, byte[] encodedFrame) {
+        
+        if (encodedFrame == null) {
+            throw new IllegalArgumentException("Decode: Provided frame must not be null!");
+        }
+        
+        Optional<BufferedImage> decodedFrame = Optional.empty();
+        try {
+            decodedFrame = 
+                    Optional.of(ImageIO.read(new ByteArrayInputStream(encodedFrame)));
+        } catch (IOException exception) {
+            System.out.println("Decode: Could not decode encoded frame!");
+            System.out.println(exception.toString());
+        }
+        
+        Optional<BufferedImage> result;
+        
+        // modify result in case state is present
+        // we need to add the difference
+        if (state.isPresent() && decodedFrame.isPresent()) {
+            result = Optional.of(addDifference(state.get(), decodedFrame.get()));
+        } else {
+            result = decodedFrame;
+        }
+
+        return result;
     }
 
     /**
@@ -113,7 +140,7 @@ public class Codec implements ICodec {
 
     /**
      * Calculate the difference between two images. The difference is simply
-     * calculated with pixelBefore - pixelAfter.
+     * calculated using method calculatePixelDifference(...).
      *
      * @param before Image before.
      * @param after Image after.
@@ -152,7 +179,8 @@ public class Codec implements ICodec {
     }
 
     /**
-     * Calculates the difference between two pixel components.
+     * Calculates the difference between two pixel components. The difference
+     * is always expressed as an addition with modulo 256 to do a wrap around.
      *
      * @param rgbOne First pixel value.
      * @param rgbTwo Second pixel value.
@@ -165,9 +193,114 @@ public class Codec implements ICodec {
         Function<Integer, Integer> getRed = rgb -> (rgb >> 16) & 0xFF;
         Function<Integer, Integer> getGreen = rgb -> (rgb >> 8) & 0xFF;
         Function<Integer, Integer> getBlue = rgb -> rgb & 0xFF;
+        
+        BiFunction<Integer, Integer, Integer> componentDifference = 
+                (componentOne, componentTwo) -> {
+                    int result;
+                    // difference between the two components
+                    // positive: component value increase (easy case)
+                    // negative: component value decrease (not so easy case)
+                    int difference = componentTwo - componentOne;
+                    
+                    if (difference < 0) {
+                        // not so easy case
+                        // we will send the difference as addition with mod 256
+                        difference = difference + 256;
+                    }
+                    
+                    return difference;
+                };
 
-        return (Math.abs(getRed.apply(rgbOne) - getRed.apply(rgbTwo)) << 16)
-                | (Math.abs(getGreen.apply(rgbOne) - getGreen.apply(rgbTwo)) << 8)
-                | Math.abs(getBlue.apply(rgbOne) - getBlue.apply(rgbTwo));
+        return (componentDifference.apply(getRed.apply(rgbOne), getRed.apply(rgbTwo))) << 16
+                | (componentDifference.apply(getGreen.apply(rgbOne), getGreen.apply(rgbTwo))) << 8
+                | (componentDifference.apply(getBlue.apply(rgbOne), getBlue.apply(rgbTwo)));
     }
+    
+    /**
+     * Adds the difference to the given state.
+     * 
+     * @param state The image that the difference will be added to.
+     * @param difference The difference values stored in an image.
+     * 
+     * @return The resulting image. 
+     */
+    private BufferedImage addDifference(BufferedImage state, BufferedImage difference) {
+        
+        if (state == null) {
+            throw new IllegalArgumentException("Difference Calculation: Image state must not be null!");
+        }
+
+        if (difference == null) {
+            throw new IllegalArgumentException("Difference Calculation: Image difference must not be null!");
+        }
+
+        if (difference.getHeight() == state.getHeight() && difference.getWidth() == state.getHeight()) {
+            throw new IllegalArgumentException("Difference Calculation: Image dimensions must align!");
+        }
+        
+        // result image
+        BufferedImage result = new BufferedImage(
+                state.getWidth(),
+                state.getHeight(),
+                BufferedImage.TYPE_3BYTE_BGR);
+
+        // loop and calculate difference
+        for (int y = 0; y < result.getHeight(); y++) {
+            for (int x = 0; x < result.getWidth(); x++) {
+                result.setRGB(x, y, addPixelDifference(
+                        state.getRGB(x, y), 
+                        difference.getRGB(x, y))
+                );
+            }
+        }
+        
+        return result;
+        
+    }
+    
+    /**
+     * This performs the reverse operation of the operation performed in
+     * calculated pixel difference.
+     * 
+     * @param rgbState The pixel value before adding the difference.
+     * @param rgbDifference The difference.
+     * 
+     * @return the new pixel value coded into an integer. 
+     */
+    private int addPixelDifference(int rgbState, int rgbDifference) {
+        
+        int red = getRed(rgbState) + getRed(rgbDifference) % 256;
+        int green = getGreen(rgbState) + getGreen(rgbDifference) % 256;
+        int blue = getBlue(rgbState) + getBlue(rgbDifference) % 256;
+        
+        return  (red << 16) | (green << 8) | blue;
+    }
+    
+    /**
+     * Extract red from rgb values coded into integer.
+     * @param rgb The rgb value.
+     * @return The value of the red component.
+     */
+    private int getRed(int rgb) {
+        return (rgb >> 16) & 0xFF;
+    }
+    
+    /**
+     * Extract green from rgb values coded into integer.
+     * @param rgb The rgb value.
+     * @return The value of the green component.
+     */
+    private int getGreen(int rgb) {
+        return (rgb >> 8) & 0xFF;
+    }
+    
+    /**
+     * Extract blue from rgb values coded into integer.
+     * @param rgb The rgb value.
+     * @return The value of the blue component.
+     */
+    private int getBlue(int rgb) {
+        return rgb & 0xFF;
+    }
+   
 }
