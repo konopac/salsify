@@ -30,7 +30,7 @@ public class Salsify implements ISalsify, IWebcamListener {
 	public void receiveFrame(BufferedImage frame) {
 		System.out.println("Received frame: " + frame);
 		// encode the frame
-		final BufferedImage encodedFrame = codec.encode(null, frame, 1);
+		final byte[] encodedFrame = codec.encode(null, frame, 1).get();
 		// send encoded frame
 		sender.sendFrame(encodedFrame);
 	}
