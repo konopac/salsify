@@ -21,8 +21,8 @@ public class Main {
 		BufferedImage img1 = null;
 		BufferedImage img2 = null;
 		try {
-			img1 = ImageIO.read(new File("/home/philipp/Studium/workspaces/netzwerke2/Salsify/images/image1.png"));
-			img2 = ImageIO.read(new File("/home/philipp/Studium/workspaces/netzwerke2/Salsify/images/image2.png"));
+			img1 = ImageIO.read(new File("/home/philipp/Studium/workspaces/netzwerke2/Salsify/images/image1.jpg"));
+			img2 = ImageIO.read(new File("/home/philipp/Studium/workspaces/netzwerke2/Salsify/images/image2.jpg"));
 		} catch (IOException e) {
 		}
 
