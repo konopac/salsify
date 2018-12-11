@@ -11,10 +11,11 @@ public interface ICodec {
      * provide a state the image will simply be the same as frame but encoded
      * to jpeg.
      * 
-     * @param state
-     * @param frame
-     * @param quality
-     * @return 
+     * @param state The state of the encoder.
+     * @param frame The frame to be encoded.
+     * @param quality The quality of the encoding (integer in range [0, 100]).
+     * 
+     * @return The jpeg encoded frame.
      */
     Optional<byte[]> encode(Optional<BufferedImage> state, BufferedImage frame, int quality);
 
