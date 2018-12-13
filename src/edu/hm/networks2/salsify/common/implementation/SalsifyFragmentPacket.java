@@ -29,32 +29,7 @@ public class SalsifyFragmentPacket {
     /**
      * MAXIMUM size of data in a fragment. This is equal to the number of bytes.
      */
-    public final int MAXIMUM_DATA_SIZE = 1004;
-    
-    /**
-     * Bytes 0-3 is fragment index.
-     */
-    private final int FRAGMENT_INDEX_OFFSET = 0;
-    
-    /**
-     * Bytes 4-7 is grace period.
-     */
-    private final int GRACE_PERIOD_OFFSET = 4;
-    
-    /**
-     * Bytes 8-11 is frame index.
-     */
-    private final int FRAME_INDEX_OFFSET = 8;
-    
-    /**
-     * Bytes 12-15 is fragment index state.
-     */
-    private final int FRAME_INDEX_STATE_OFFSET = 12;
-    
-    /**
-     * Bytes 16-19 is remaining fragments.
-     */
-    private final int REMAINING_FRAGMENTS_OFFSET = 16;
+    public final static int MAXIMUM_DATA_SIZE = 1004;
     
     /**
      * Bytes 20-1023 is data.
@@ -127,7 +102,8 @@ public class SalsifyFragmentPacket {
     
     /**
      * This is to initialize a salsify fragment with rawData that was just received
-     * on the network. Without the udp header of course.
+     * on the network. Without the UDP header of course but including the salsify 
+     * header.
      * 
      * @param rawData The raw bytes of the rawData that is to be converted to a salsify
      * fragment.
@@ -189,6 +165,15 @@ public class SalsifyFragmentPacket {
     public int getSize() {
         // 20 is the fixed header size
         return this.data.length + 20;
+    }
+    
+    /**
+     * Get the size (number of bytes) contained in this packet.
+     * 
+     * @return integer representing the size. 
+     */
+    public int getDataSize() {
+        return this.data.length;
     }
     
     public int getFragmentIndex() {
