@@ -5,12 +5,54 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 
+import edu.hm.networks2.salsify.common.implementation.SalsifyAck;
 import edu.hm.networks2.salsify.common.implementation.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
-import edu.hm.networks2.salsify.sender.helper.IAckListener;
 
-public class Sender implements ISender, IAckListener {
+/**
+ * @author Philipp
+ */
+public class Sender implements ISender {
+	
+	/**
+	 * @author Philipp
+	 */
+	private class AckReceiver extends Thread {
+
+		@Override
+		public void run() {
+			System.out.println("ACK-RECEIVER: \t waiting for ACKs");
+			// allocate memory for incoming ack data
+			final byte[] ackData = ByteBuffer.allocate(SalsifyAck.SIZE).array();
+			final DatagramPacket ack = new DatagramPacket(ackData, ackData.length);
+			// loop infinite
+			while (!isInterrupted()) {
+				try {
+					// block until an ACK arrives
+					socket.receive(ack);
+					// extract data from reveived ACK
+					final SalsifyAck salsifyAck = new SalsifyAck(ackData);
+					System.out.println("ACK-RECEIVER: \t received ACK for frame " + salsifyAck.getFrameIndex() + " fragment " + salsifyAck.getFragmentIndex());
+					// set new inter arrival time
+					setLatestInterArrivalTime(salsifyAck.getInterArrivalTime());
+				} catch (SocketException exception) {
+					// thread is stopping when socket is closed
+					System.out.println("ACK-RECEIVER: \t stopped waiting for ACKs");
+				} catch (IOException exception) {
+					System.err.println("Salsify Sender had problems receiving ACKs.");
+					exception.printStackTrace();
+				}
+			}
+		}
+		
+		@Override
+		public void interrupt() {
+			super.interrupt();
+			socket.close();
+		}
+	}
 	
 	/**
 	 * 
@@ -47,8 +89,7 @@ public class Sender implements ISender, IAckListener {
 			exception.printStackTrace();
 		}
 		
-
-		ackReceiver = new AckReceiver(socket);
+		ackReceiver = new AckReceiver();
 		ackReceiver.start();
 	}
 	
@@ -72,19 +113,19 @@ public class Sender implements ISender, IAckListener {
 		return latestInterArrivalTime;
 	}
 	
+	private void setLatestInterArrivalTime(int latestInterArrivalTime) {
+		this.latestInterArrivalTime = latestInterArrivalTime;
+	}
+	
 	@Override
 	public void stopListening() {
 		ackReceiver.interrupt();
 	}
 	
-	@Override
-	public void receiveValue(int value) {
-		latestInterArrivalTime = value;
-	}
 	
 	@Override
 	public void join() throws InterruptedException {
 		ackReceiver.join();
 	}
-
+	
 }
