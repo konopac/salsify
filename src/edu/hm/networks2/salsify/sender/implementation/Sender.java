@@ -57,11 +57,14 @@ public class Sender implements ISender, IAckListener {
 	public void sendFrame(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod) throws IOException {
 		// build a salsify frame from input data
 		final SalsifyFrame frame = new SalsifyFrame(data, frameIndex, sourceFrameIndex, gracePeriod);
+		System.out.print("SENDER: \t sending frame " + frame.getFrameIndex() + " fragment");
 		// send each salsify fragment inside the frame
 		for (int index = 0; index < frame.getNumberOfFragments(); index++) {
 			final byte[] fragment = frame.getFragment(index).getRawPacket();
+			System.out.print(" " + frame.getFragment(index).getFragmentIndex());
 			socket.send(new DatagramPacket(fragment, fragment.length, InetAddress.getByName(DESTINATION_IP), DESTINATION_PORT));
 		}
+		System.out.println();
 	}
 
 	@Override
@@ -77,6 +80,11 @@ public class Sender implements ISender, IAckListener {
 	@Override
 	public void receiveValue(int value) {
 		latestInterArrivalTime = value;
+	}
+	
+	@Override
+	public void join() throws InterruptedException {
+		ackReceiver.join();
 	}
 
 }

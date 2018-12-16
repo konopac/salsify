@@ -20,7 +20,8 @@ import java.util.Arrays;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
+		
 //                
 //            // test area for fragment
 //            ByteBuffer allocate = ByteBuffer.allocate(1024);
@@ -99,9 +100,11 @@ public class Main {
 //		
 		
 
+		System.out.println("MAIN: \t\t starting salsify sender");
 		ISalsify sender = new Salsify();
 		sender.start();
-		System.out.println("end");
+		sender.join();
+		System.out.println("MAIN: \t\t stopped salsify sender");
 	}
 
 }

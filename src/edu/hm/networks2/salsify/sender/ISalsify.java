@@ -4,4 +4,6 @@ public interface ISalsify {
 
 	void start();
 	
+	void join() throws InterruptedException;
+	
 }

@@ -39,7 +39,7 @@ public class Salsify implements ISalsify, IWebcamListener {
 	
 	@Override
 	public void receiveFrame(BufferedImage frame) {
-		System.out.println("Received frame: " + frame);
+		System.out.println("SALSIFY: \t processing frame " + currentFrame);
 		// store frame until this frame is acknowledged by the receiver
 		frames.add(frame);
 		
@@ -67,6 +67,11 @@ public class Salsify implements ISalsify, IWebcamListener {
 	@Override
 	public void disconnected() {
 		sender.stopListening();
+	}
+	
+	@Override
+	public void join() throws InterruptedException {
+		sender.join();
 	}
 
 }

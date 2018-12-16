@@ -24,25 +24,27 @@ public class AckReceiver extends Thread {
 	
 	@Override
 	public void run() {
+		System.out.println("ACK-RECEIVER: \t waiting for ACKs");
 		// allocate memory for incoming ack data
 		final byte[] ackData = ByteBuffer.allocate(SalsifyAck.SIZE).array();
 		final DatagramPacket ack = new DatagramPacket(ackData, ackData.length);
 		// loop infinite
 		while (!isInterrupted()) {
 			try {
-				System.out.println("blocking until ACK arrives");
 				// block until an ACK arrives
 				socket.receive(ack);
+				// extract data from reveived ACK
+				final SalsifyAck salsifyAck = new SalsifyAck(ackData);
+				System.out.println("ACK-RECEIVER: \t received ACK for frame " + salsifyAck.getFrameIndex() + " fragment " + salsifyAck.getFragmentIndex());
+				// notify listeners about the change
+				listeners.forEach(listener -> listener.receiveValue(salsifyAck.getInterArrivalTime()));
 			} catch (SocketException exception) {
 				// thread is stopping when socket is closed
+				System.out.println("ACK-RECEIVER: \t stopped waiting for ACKs");
 			} catch (IOException exception) {
 				System.err.println("Salsify Sender had problems receiving ACKs.");
 				exception.printStackTrace();
 			}
-			// extract data from reveived ACK
-			final SalsifyAck salsifyAck = new SalsifyAck(ackData);
-			// notify listeners about the change
-			listeners.forEach(listener -> listener.receiveValue(salsifyAck.getInterArrivalTime()));
 		}
 	}
 	

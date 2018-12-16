@@ -10,4 +10,6 @@ public interface ISender {
 	
 	void stopListening();
 	
+	void join() throws InterruptedException;
+	
 }
