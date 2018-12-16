@@ -23,6 +23,7 @@ public class Salsify implements ISalsify, IWebcamListener {
 	
 	@Override
 	public void start() {
+		webcam.register(this);
 		webcam.start();
 	}
 	
@@ -30,9 +31,9 @@ public class Salsify implements ISalsify, IWebcamListener {
 	public void receiveFrame(BufferedImage frame) {
 		System.out.println("Received frame: " + frame);
 		// encode the frame
-		final byte[] encodedFrame = codec.encode(null, frame, 1).get();
+//		final byte[] encodedFrame = codec.encode(null, frame, 1).get();
 		// send encoded frame
-		sender.sendFrame(encodedFrame);
+//		sender.sendFrame(encodedFrame);
 	}
 
 }
