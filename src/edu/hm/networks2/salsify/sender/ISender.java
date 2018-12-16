@@ -4,6 +4,6 @@ public interface ISender {
 
 	void sendFrame(byte[] frame, int gracePeriod, int frameIndex);
 	
-	void startReceivingAcks();
+	int GetLatestInterArrivaltime();
 	
 }
