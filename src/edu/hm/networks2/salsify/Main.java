@@ -12,14 +12,15 @@ import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
 import edu.hm.networks2.salsify.common.implementation.SalsifyFragmentPacket;
 import edu.hm.networks2.salsify.common.implementation.SalsifyFrame;
+import edu.hm.networks2.salsify.sender.ISalsify;
+import edu.hm.networks2.salsify.sender.implementation.Salsify;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class Main {
 
 	public static void main(String[] args) {
-		System.out.println("starting sender...");
-                
                 
             // test area for fragment
             ByteBuffer allocate = ByteBuffer.allocate(1024);
@@ -98,9 +99,8 @@ public class Main {
 		
 		
 
-//		ISalsify sender = new Salsify();
-//		sender.start();
-//		System.out.println("exiting sender...");
+		ISalsify sender = new Salsify();
+		sender.start();
 	}
 
 }
