@@ -23,7 +23,7 @@ public class SalsifyFrame {
     
     private final int frameIndexState;
     
-    private final List<SalsifyFragmentPacket> fragments;
+    private final List<SalsifyFragment> fragments;
 
     /**
      * Construct a salsify frame from raw data (bytes). The frame is 
@@ -41,8 +41,8 @@ public class SalsifyFrame {
     public SalsifyFrame(byte[] frame, int frameIndex, int frameIndexState, int gracePeriod) {
         
         // number of fragment that will have the maximum size
-        int fullFragments = frame.length / SalsifyFragmentPacket.MAXIMUM_DATA_SIZE;
-        int remainingBytes = frame.length % SalsifyFragmentPacket.MAXIMUM_DATA_SIZE;
+        int fullFragments = frame.length / SalsifyFragment.MAXIMUM_DATA_SIZE;
+        int remainingBytes = frame.length % SalsifyFragment.MAXIMUM_DATA_SIZE;
         
         int numberOfFragments = fullFragments;
         // one more fragment in case we have remaining bytes
@@ -57,21 +57,21 @@ public class SalsifyFrame {
         // split frame into fragments
         for (int counter = 0; counter < numberOfFragments; counter++) {
             // this will step like this: 0, 1004, 2008, 3012, ...
-            int fragmentStart = counter * SalsifyFragmentPacket.MAXIMUM_DATA_SIZE;
+            int fragmentStart = counter * SalsifyFragment.MAXIMUM_DATA_SIZE;
             // this will step like this: 1003, 1007, 1011, ...
-            int fragmentEnd = (counter + 1) * SalsifyFragmentPacket.MAXIMUM_DATA_SIZE - 1;
+            int fragmentEnd = (counter + 1) * SalsifyFragment.MAXIMUM_DATA_SIZE - 1;
             // now add
             if (counter == numberOfFragments -1) {
                 // last iteration is special
                 byte[] data = Arrays.copyOfRange(frame, fragmentStart, frame.length);
-                fragments.add(new SalsifyFragmentPacket(
+                fragments.add(new SalsifyFragment(
                         counter, gracePeriod, 
                         frameIndex, frameIndexState, 
                         numberOfFragments - counter - 1, data)
                 );
             } else {
                 byte[] data = Arrays.copyOfRange(frame, fragmentStart, fragmentEnd);
-                fragments.add(new SalsifyFragmentPacket(
+                fragments.add(new SalsifyFragment(
                         counter, gracePeriod, 
                         frameIndex, frameIndexState, 
                         numberOfFragments - counter - 1, data)
@@ -87,7 +87,7 @@ public class SalsifyFrame {
      * 
      * @param initialFragment
      */
-    public SalsifyFrame(SalsifyFragmentPacket initialFragment) {
+    public SalsifyFrame(SalsifyFragment initialFragment) {
         this.fragments = new ArrayList<>();
         this.frameIndex = initialFragment.getFrameIndex();
         this.frameIndexState = initialFragment.getFrameIndexState();
@@ -104,7 +104,7 @@ public class SalsifyFrame {
      * @param fragmentToAdd The fragment that will be added.
      * @return boolean indicating success
      */
-    public boolean addFragment(SalsifyFragmentPacket fragmentToAdd) {
+    public boolean addFragment(SalsifyFragment fragmentToAdd) {
         boolean result = 
                 // frameIndex of new fragment and frame do not match
                 fragmentToAdd.getFrameIndex() == getFrameIndex() 
@@ -135,7 +135,7 @@ public class SalsifyFrame {
         // initialize array
         byte[] frame = new byte[getFrameSize()];
         int currentIndex = 0;
-        for (SalsifyFragmentPacket fragment : this.fragments) {
+        for (SalsifyFragment fragment : this.fragments) {
             System.arraycopy(fragment.getData(), 0, frame, currentIndex, fragment.getDataSize());
             currentIndex += fragment.getDataSize();
         }
@@ -182,7 +182,7 @@ public class SalsifyFrame {
      * 
      * @return 
      */
-    public SalsifyFragmentPacket getFragment(int index) {
+    public SalsifyFragment getFragment(int index) {
         if (index < 0 || index >= getNumberOfFragments()) {
             throw new IndexOutOfBoundsException("Index must be between 0 and " + getNumberOfFragments());
         }
@@ -202,7 +202,7 @@ public class SalsifyFrame {
      * 
      * @return The last fragment. 
      */
-    public SalsifyFragmentPacket getLastFragment() {
+    public SalsifyFragment getLastFragment() {
         System.out.println("Number of elements: " + this.fragments.size());
         return this.fragments.get(this.fragments.size() - 1);
     }

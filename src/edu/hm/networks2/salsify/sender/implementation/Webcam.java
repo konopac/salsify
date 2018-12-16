@@ -42,7 +42,7 @@ public class Webcam implements IWebcam {
 	/**
 	 * Frames per second at which the webcam is sending.
 	 */
-	private static final int FPS = 1;
+	private static final int FPS = 10;
 	
 	
 	/**
@@ -83,7 +83,7 @@ public class Webcam implements IWebcam {
 				counter++;
 			} catch (IOException exception) {
 				// when next frame is not found, end searching
-				System.out.println(counter + " images found and loaded");
+				System.out.println("WEBCAM: \t " + counter + " frames found and loaded");
 				searching = false;
 			};
 		}
@@ -98,6 +98,9 @@ public class Webcam implements IWebcam {
 					listeners.forEach(listener -> listener.receiveFrame(frames.remove()));
 				} catch (NoSuchElementException exception) {
 					timer.cancel();
+					// notify all listeners that the webcam stopped working
+					System.out.println("WEBCAM: \t stopped working");
+					listeners.forEach(listener -> listener.disconnected());
 				}
 			}
 		}, 0, 1000 / FPS);
