@@ -12,15 +12,26 @@ import edu.hm.networks2.salsify.common.implementation.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 
 /**
+ * This is an implementation of ISender. It sends all frames as UDP-packets and starts
+ * an extra thread to listen for ACKs to the network.
+ * 
  * @author Philipp
  */
 public class Sender implements ISender {
 	
 	/**
+	 * This is an inner class which extends Thread. This thread receives ACKs until it gets interrupted.
+	 * 
 	 * @author Philipp
 	 */
 	private class AckReceiver extends Thread {
 
+		/**
+		 * {@inheritDoc}<br>
+		 * This implementation waits for UDP packets to interpret them as ACKs from the receiver.
+		 * 
+		 * @see java.lang.Thread#run()
+		 */
 		@Override
 		public void run() {
 			System.out.println("ACK-RECEIVER: \t waiting for ACKs");
@@ -47,6 +58,12 @@ public class Sender implements ISender {
 			}
 		}
 		
+		/**
+		 * {@inheritDoc}<br>
+		 * When this implementation gets interrupted, the socket used for receiving ACKs gets closed.
+		 * 
+		 * @see java.lang.Thread#interrupt()
+		 */
 		@Override
 		public void interrupt() {
 			super.interrupt();
@@ -54,31 +71,37 @@ public class Sender implements ISender {
 		}
 	}
 	
+	
 	/**
-	 * 
+	 * IP address of the receiver.
 	 */
 	private static final String DESTINATION_IP = "localhost";
 	
 	/**
-	 * 
+	 * Port of the receiver.
 	 */
 	private static final int DESTINATION_PORT = 48938;
 	
 	/**
-	 * 
+	 * Socket which is used to send frames and receive ACKs.
 	 */
 	private DatagramSocket socket;
 	
 	/**
-	 * 
+	 * Thread that receives ACKs.
 	 */
-	private Thread ackReceiver;
+	private AckReceiver ackReceiver;
 	
 	/**
-	 * 
+	 * Latest measured inter-arrival time.
 	 */
 	private int latestInterArrivalTime;
 	
+	
+	/**
+	 * Constructor that creates the socket for sending frames and receiving ACKs
+	 * and starts the thread that receives ACKs.
+	 */
 	public Sender() {
 		latestInterArrivalTime = 0;
 		
@@ -94,6 +117,12 @@ public class Sender implements ISender {
 	}
 	
 
+	/**
+	 * {@inheritDoc}<br>
+	 * This implementation splits a frame into several fragments and uses UDP packets to send them.
+	 * 
+	 * @see edu.hm.networks2.salsify.sender.ISender#sendFrame(byte[], int, int, int)
+	 */
 	@Override
 	public void sendFrame(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod) throws IOException {
 		// build a salsify frame from input data
@@ -108,24 +137,42 @@ public class Sender implements ISender {
 		System.out.println();
 	}
 
+	/**
+	 * {@inheritDoc}<br>
+	 * This implementation is just a normal getter.
+	 * 
+	 * @see edu.hm.networks2.salsify.sender.ISender#getLatestInterArrivalTime()
+	 */
 	@Override
 	public int getLatestInterArrivalTime() {
 		return latestInterArrivalTime;
 	}
 	
-	private void setLatestInterArrivalTime(int latestInterArrivalTime) {
-		this.latestInterArrivalTime = latestInterArrivalTime;
-	}
-	
+	/**
+	 * {@inheritDoc}<br>
+	 * This implementation interrupts the threat that receives ACKs.
+	 * 
+	 * @see edu.hm.networks2.salsify.sender.ISender#stopListening()
+	 */
 	@Override
 	public void stopListening() {
 		ackReceiver.interrupt();
 	}
 	
-	
+	/**
+	 * {@inheritDoc}<br>
+	 * This implementation just joins the threat that receives ACKs.
+	 * 
+	 * @see edu.hm.networks2.salsify.sender.ISender#join()
+	 */
 	@Override
 	public void join() throws InterruptedException {
 		ackReceiver.join();
+	}
+
+	
+	private void setLatestInterArrivalTime(int latestInterArrivalTime) {
+		this.latestInterArrivalTime = latestInterArrivalTime;
 	}
 	
 }
