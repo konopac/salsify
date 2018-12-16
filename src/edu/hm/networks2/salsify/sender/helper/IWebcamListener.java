@@ -6,4 +6,6 @@ public interface IWebcamListener {
 
 	void receiveFrame(BufferedImage frame);
 	
+	void disconnected();
+	
 }

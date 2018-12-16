@@ -24,7 +24,7 @@ import java.util.Arrays;
  *
  * @author Nico
  */
-public class SalsifyFragmentPacket {
+public class SalsifyFragment {
 
     /**
      * MAXIMUM size of data in a fragment. This is equal to the number of bytes.
@@ -79,7 +79,7 @@ public class SalsifyFragmentPacket {
      * @param data The actual data to be included in the packet. Not allowed to
      * exceed MAXIMUM_DATA_SIZE.
      */
-    public SalsifyFragmentPacket(int fragmentIndex, int gracePeriod, 
+    public SalsifyFragment(int fragmentIndex, int gracePeriod, 
             int frameIndex, int frameIndexState, int remainingFragments, byte[] data) {
 
         if (data == null) {
@@ -108,7 +108,7 @@ public class SalsifyFragmentPacket {
      * @param rawData The raw bytes of the rawData that is to be converted to a salsify
      * fragment.
      */
-    public SalsifyFragmentPacket(byte[] rawData) {
+    public SalsifyFragment(byte[] rawData) {
         if (rawData == null) {
             throw new NullPointerException("SalsifyFragment: data is not allowed to be null!");
         }
@@ -130,7 +130,7 @@ public class SalsifyFragmentPacket {
     /**
      * Only use this if you want to initialize by hand --> Using setters.
      */
-    public SalsifyFragmentPacket() {
+    public SalsifyFragment() {
         this.fragmentIndex = 0;
         this.gracePeriod = 0;
         this.frameIndex = 0;

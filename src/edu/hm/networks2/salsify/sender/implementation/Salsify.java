@@ -1,6 +1,10 @@
 package edu.hm.networks2.salsify.sender.implementation;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
@@ -15,10 +19,16 @@ public class Salsify implements ISalsify, IWebcamListener {
 	private ICodec codec;
 	private ISender sender;
 	
+	private List<BufferedImage> frames;
+	private int currentFrame;
+	
 	public Salsify() {
 		webcam = new Webcam();
 		codec = new Codec();
 		sender = new Sender();
+		
+		frames = new ArrayList<>();
+		currentFrame = 0;
 	}
 	
 	@Override
@@ -30,10 +40,33 @@ public class Salsify implements ISalsify, IWebcamListener {
 	@Override
 	public void receiveFrame(BufferedImage frame) {
 		System.out.println("Received frame: " + frame);
+		// store frame until this frame is acknowledged by the receiver
+		frames.add(frame);
+		
+		// get the source state
+		final Optional<BufferedImage> source;
+		if (currentFrame <= 0) {
+			source = Optional.of(frames.get(currentFrame));
+		} else {
+			source = Optional.of(frames.get(currentFrame - 1));
+		}
+		
 		// encode the frame
-//		final byte[] encodedFrame = codec.encode(null, frame, 1).get();
+		final byte[] encodedFrame = codec.encode(source, frame, 1).get();
+		
 		// send encoded frame
-//		sender.sendFrame(encodedFrame);
+		try {
+			sender.sendFrame(encodedFrame, currentFrame, currentFrame - 1, 0);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		currentFrame++;
+	}
+	
+	@Override
+	public void disconnected() {
+		sender.stopListening();
 	}
 
 }
