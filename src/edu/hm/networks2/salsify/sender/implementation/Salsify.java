@@ -46,7 +46,7 @@ public class Salsify implements ISalsify, IWebcamListener {
 		// get the source state
 		final Optional<BufferedImage> source;
 		if (currentFrame <= 0) {
-			source = Optional.of(frames.get(currentFrame));
+			source = Optional.empty();
 		} else {
 			source = Optional.of(frames.get(currentFrame - 1));
 		}
