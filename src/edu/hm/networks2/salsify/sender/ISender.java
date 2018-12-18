@@ -1,5 +1,6 @@
 package edu.hm.networks2.salsify.sender;
 
+import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import java.io.IOException;
 
 /**
@@ -21,11 +22,11 @@ public interface ISender {
 	void sendFrame(byte[] frame, int frameIndex, int sourceFrameIndex, int gracePeriod) throws IOException;
 	
 	/**
-	 * Get the latest measured inter-arrival time.
+	 * Get the latest measured bandwidth.
 	 * 
-	 * @return the inter-arrival time
+	 * @return the latest measured bandwidth
 	 */
-	int getLatestInterArrivalTime();
+	int getLatestBandwidth();
 	
 	/**
 	 * Stop listening for ACKs to the network.

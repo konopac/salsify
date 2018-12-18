@@ -25,9 +25,10 @@ public class SalsifyAck {
     private final int fragmentIndex;
     
     /**
-     * Inter-arrival time for this ACK.
+     * Bandwidth for this ACK. In case this is -1 the bandwidth could
+     * not be measured.
      */
-    private final int interArrivalTime;    
+    private final int bandwidth;    
 
     
     /**
@@ -46,7 +47,7 @@ public class SalsifyAck {
         ByteBuffer byteBuffer = ByteBuffer.wrap(rawData);
         this.frameIndex = byteBuffer.getInt();
         this.fragmentIndex = byteBuffer.getInt();
-        this.interArrivalTime = byteBuffer.getInt();
+        this.bandwidth = byteBuffer.getInt();
 	}
 
 	/**
@@ -55,12 +56,12 @@ public class SalsifyAck {
      * 
 	 * @param frameIndex is the frame index of the acknowledged frame
 	 * @param fragmentIndex is the fragment index of the acknowledged fragment
-	 * @param interArrivalTime is the inter-arrival time for this ACK
+	 * @param bandwidth is the estimated bandwidth of the network connection
 	 */
-	public SalsifyAck(int frameIndex, int fragmentIndex, int interArrivalTime) {
+	public SalsifyAck(int frameIndex, int fragmentIndex, int bandwidth) {
 		this.frameIndex = frameIndex;
 		this.fragmentIndex = fragmentIndex;
-		this.interArrivalTime = interArrivalTime;
+		this.bandwidth = bandwidth;
 	}
     
     /**
@@ -72,7 +73,7 @@ public class SalsifyAck {
         return ByteBuffer.allocate(SIZE)
         		.putInt(this.frameIndex)
                 .putInt(this.fragmentIndex)
-                .putInt(this.interArrivalTime)
+                .putInt(this.bandwidth)
                 .array();               
     }
 
@@ -85,8 +86,8 @@ public class SalsifyAck {
 		return fragmentIndex;
 	}
 
-	public int getInterArrivalTime() {
-		return interArrivalTime;
+	public int getBandwidth() {
+		return bandwidth;
 	}
     
 }

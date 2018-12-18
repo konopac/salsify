@@ -11,22 +11,22 @@ import edu.hm.networks2.salsify.common.implementation.Codec;
 import edu.hm.networks2.salsify.sender.ISalsify;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.IWebcam;
+import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import edu.hm.networks2.salsify.sender.helper.IWebcamListener;
 
-public class Salsify implements ISalsify, IWebcamListener {
+public class Salsify implements ISalsify, IWebcamListener, ITransportProtocolListener {
 
-	private IWebcam webcam;
-	private ICodec codec;
-	private ISender sender;
+	private final IWebcam webcam;
+	private final ICodec codec;
+	private final ISender sender;
 	
-	private List<BufferedImage> frames;
+	private final List<BufferedImage> frames;
 	private int currentFrame;
 	
 	public Salsify() {
 		webcam = new Webcam();
 		codec = new Codec();
-		sender = new Sender();
-		
+		sender = new Sender(this);
 		frames = new ArrayList<>();
 		currentFrame = 0;
 	}
@@ -57,8 +57,8 @@ public class Salsify implements ISalsify, IWebcamListener {
 		// send encoded frame
 		try {
 			sender.sendFrame(encodedFrame, currentFrame, currentFrame - 1, 0);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException exception) {
+                    System.out.println(exception.toString());
 		}
 		
 		currentFrame++;
@@ -73,5 +73,16 @@ public class Salsify implements ISalsify, IWebcamListener {
 	public void join() throws InterruptedException {
 		sender.join();
 	}
+
+    @Override
+    public void reset() {
+        System.out.println("SALSIFY: \t received reset notification");
+    }
+
+    @Override
+    public void acknowledged(int frameIndex) {
+        System.out.println("SALSIFY: \t received ack for frame " + frameIndex);
+        
+    }
 
 }
