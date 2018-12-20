@@ -8,13 +8,13 @@ import java.util.Optional;
 
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
-import edu.hm.networks2.salsify.sender.ISalsify;
+import edu.hm.networks2.salsify.sender.ISalsifySenderCore;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.IWebcam;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import edu.hm.networks2.salsify.sender.helper.IWebcamListener;
 
-public class Salsify implements ISalsify, IWebcamListener, ITransportProtocolListener {
+public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, ITransportProtocolListener {
 
 	private final IWebcam webcam;
 	private final ICodec codec;
@@ -23,7 +23,7 @@ public class Salsify implements ISalsify, IWebcamListener, ITransportProtocolLis
 	private final List<BufferedImage> frames;
 	private int currentFrame;
 	
-	public Salsify() {
+	public SalsifySenderCore() {
 		webcam = new Webcam();
 		codec = new Codec();
 		sender = new Sender(this);
