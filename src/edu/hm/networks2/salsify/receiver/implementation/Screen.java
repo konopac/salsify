@@ -8,12 +8,12 @@ public class Screen implements IScreen {
 
 	@Override
 	public void start() {
-		System.out.println("Screen started");
+        System.out.println("SCREEN: \t started");
 	}
 
 	@Override
 	public void displayFrame(BufferedImage frame) {
-		System.out.println("Displaying frame " + frame);
+        System.out.println("SCREEN: \t displaying frame " + frame);
 	}
 
 }

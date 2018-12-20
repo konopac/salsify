@@ -10,14 +10,6 @@ import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
 public interface IReceiver {
 
 	/**
-	 * Send an acknowledgement.
-	 * 
-	 * @param frameIndex is the index of the acknowledged frame
-	 * @param fragmentIndex is the index of the fragment inside the frame
-	 */
-	void sendAck(int frameIndex, int fragmentIndex);
-	
-	/**
 	 * Start the receiver.
 	 */
 	void start();
@@ -28,5 +20,12 @@ public interface IReceiver {
 	 * @param listener is the new listener
 	 */
 	void register(IReceiverListener listener);
+	
+	/**
+	 * Wait until the Receiver is done waiting for fragments.
+	 * 
+	 * @throws InterruptedException if the thread gets interrupted while waiting
+	 */
+	void join() throws InterruptedException;
 	
 }

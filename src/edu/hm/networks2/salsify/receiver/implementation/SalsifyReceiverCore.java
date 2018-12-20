@@ -1,5 +1,8 @@
 package edu.hm.networks2.salsify.receiver.implementation;
 
+import java.awt.image.BufferedImage;
+import java.util.Optional;
+
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
 import edu.hm.networks2.salsify.receiver.IReceiver;
@@ -28,13 +31,15 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
 
 	@Override
 	public void join() throws InterruptedException {
-		// TODO Auto-generated method stub
+		receiver.join();
 	}
 
 	@Override
-	public void frameReceived(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod) {
-		System.out.println("processing frame...");
-		receiver.sendAck(frameIndex, sourceFrameIndex);
+	public void receiveFrame(byte[] data, int frameIndex, int sourceFrameIndex) {
+        System.out.println("SALSIFY: \t processing frame " + frameIndex + "...");
+		// TODO: store source state and use it here
+		final Optional<BufferedImage> frame = codec.decode(Optional.empty(), data);
+		screen.displayFrame(frame.get());
 	}
 
 }

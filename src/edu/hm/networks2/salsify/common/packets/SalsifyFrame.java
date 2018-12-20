@@ -203,7 +203,6 @@ public class SalsifyFrame {
      * @return The last fragment. 
      */
     public SalsifyFragment getLastFragment() {
-        System.out.println("Number of elements: " + this.fragments.size());
         return this.fragments.get(this.fragments.size() - 1);
     }
     
