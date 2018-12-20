@@ -15,7 +15,7 @@ public class Receiver implements IReceiver {
 	}
 	
 	@Override
-	public void sendAck(int frameIndex, int sourceFrameIndex) {
+	public void sendAck(int frameIndex, int fragmentIndex) {
 		System.out.println("sending ack");
 	}
 

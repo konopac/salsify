@@ -9,9 +9,14 @@ import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
  */
 public interface IReceiver {
 
-	void sendAck(int frameIndex, int sourceFrameIndex);
+	/**
+	 * Send an acknowledgement.
+	 * 
+	 * @param frameIndex is the index of the acknowledged frame
+	 * @param fragmentIndex is the index of the fragment inside the frame
+	 */
+	void sendAck(int frameIndex, int fragmentIndex);
 	
-
 	/**
 	 * Start the receiver.
 	 */
