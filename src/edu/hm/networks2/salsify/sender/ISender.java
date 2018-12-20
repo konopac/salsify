@@ -27,6 +27,12 @@ public interface ISender {
 	 * @return the latest measured bandwidth
 	 */
 	int getLatestBandwidth();
+        
+        /**
+         * Reset the sender. This happens when a frame loss occurred and we
+         * will send new frames based on an older frame.
+         */
+        void resetSender();
 	
 	/**
 	 * Stop listening for ACKs to the network.

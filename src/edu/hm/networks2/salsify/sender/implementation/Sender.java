@@ -104,10 +104,10 @@ public class Sender implements ISender {
     private final AckReceiver ackReceiver;
 
     /**
-     * Latest measured inter-arrival time.
+     * Latest measured bandwidth time.
      */
     private int latestBandwidth;
-    
+
     /**
      * Stores listeners to notify about events.
      */
@@ -127,11 +127,11 @@ public class Sender implements ISender {
     /**
      * Constructor that creates the socket for sending frames and receiving ACKs
      * and starts the thread that receives ACKs.
-     * 
+     *
      * @param listener The given listener will get notified about events.
      */
     public Sender(ITransportProtocolListener listener) {
-        latestBandwidth = 0;
+        latestBandwidth = -1;
 
         try {
             socket = new DatagramSocket();
@@ -217,9 +217,9 @@ public class Sender implements ISender {
      * nowledged for this frame.
      */
     private void addUnacknowledgedFrame(int frameIndex, int numberOfFragments) {
-        if (!acknowledgements.containsKey(frameIndex)) {
+        if (!getAcknowledgements().containsKey(frameIndex)) {
             // start with -1 (nothing is ackowledged)
-            acknowledgements.put(frameIndex, new AbstractMap.SimpleEntry<>(numberOfFragments, -1));
+            getAcknowledgements().put(frameIndex, new AbstractMap.SimpleEntry<>(numberOfFragments, -1));
         }
     }
 
@@ -229,8 +229,8 @@ public class Sender implements ISender {
      * @param frameIndex frame identified by its index.
      */
     private void removeFrameFromAcknowledgements(int frameIndex) {
-        if (acknowledgements.containsKey(frameIndex)) {
-            acknowledgements.remove(frameIndex);
+        if (getAcknowledgements().containsKey(frameIndex)) {
+            getAcknowledgements().remove(frameIndex);
         }
     }
 
@@ -245,8 +245,8 @@ public class Sender implements ISender {
      */
     private boolean isFrameAcknowledged(int frameIndex) {
         boolean result = false;
-        if (acknowledgements.containsKey(frameIndex)) {
-            result = (acknowledgements.get(frameIndex).getKey() - 1) == acknowledgements.get(frameIndex).getValue();
+        if (getAcknowledgements().containsKey(frameIndex)) {
+            result = (getAcknowledgements().get(frameIndex).getKey() - 1) == getAcknowledgements().get(frameIndex).getValue();
         }
         return result;
     }
@@ -263,14 +263,14 @@ public class Sender implements ISender {
         boolean duplicate = false;
 
         // exists?
-        if (acknowledgements.containsKey(frameIndex)) {
+        if (getAcknowledgements().containsKey(frameIndex)) {
             // is already acknowledged?
-            int oldValue = acknowledgements.get(frameIndex).getValue();
-            duplicate = oldValue == fragmentIndex;
+            int oldValue = getAcknowledgements().get(frameIndex).getValue();
+            duplicate = oldValue <= fragmentIndex;
 
             // only modify if old value smaller than new one
             if (oldValue < fragmentIndex) {
-                acknowledgements.get(frameIndex).setValue(fragmentIndex);
+                getAcknowledgements().get(frameIndex).setValue(fragmentIndex);
             }
 
         }
@@ -290,10 +290,10 @@ public class Sender implements ISender {
             // DUPLICATE FOUND!
             // listener has to reset back to a frame that is completely 
             // acknowledged
-            System.out.println("SENDER: \t received duplicate frame " 
-                    + frameIndex 
-                    + " fragment " 
-                    + fragmentIndex 
+            System.out.println("SENDER: \t received duplicate frame "
+                    + frameIndex
+                    + " fragment "
+                    + fragmentIndex
                     + ". Notifying listener to reset");
             listener.reset();
 
@@ -301,12 +301,32 @@ public class Sender implements ISender {
             // everything fine
             if (isFrameAcknowledged(frameIndex)) {
                 // perfect we have a complete frame --> report to salsify
-                System.out.println("SENDER: \t notifying listener about complete frame " 
+                System.out.println("SENDER: \t notifying listener about complete frame "
                         + frameIndex);
                 listener.acknowledged(frameIndex);
+                // we dont need to wait for acknowledgements for older frames than this
+                int index = frameIndex -1;
+                while (getAcknowledgements().containsKey(frameIndex - 1)) {
+                    removeFrameFromAcknowledgements(index);
+                    index--;
+                }
             }
         }
 
+    }
+
+    @Override
+    public void resetSender() {
+        // clear all pending acknowledgements
+        getAcknowledgements().clear();
+    }
+
+    /**
+     * Synchronized access to acknowledgements.
+     * @return acknowledgements map
+     */
+    public synchronized Map<Integer, Map.Entry<Integer, Integer>> getAcknowledgements() {      
+        return acknowledgements;
     }
 
 }

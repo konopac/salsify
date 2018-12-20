@@ -37,23 +37,23 @@ public class Webcam implements IWebcam {
 	/**
 	 * File extension for all frames.
 	 */
-	private static final String FRAME_EXTENSION = ".png";
+	private static final String FRAME_EXTENSION = ".jpg";
 	
 	/**
-	 * Frames per second at which the webcam is sending.
+	 * Delay in between two frames.
 	 */
-	private static final int FPS = 10;
+	public static final int FRAME_DELAY = 100;
 	
 	
 	/**
 	 * A queue that stores all available frames.
 	 */
-	private Queue<BufferedImage> frames;
+	private final Queue<BufferedImage> frames;
 	
 	/**
 	 * A list of all webcam listeners.
 	 */
-	private List<IWebcamListener> listeners;
+	private final List<IWebcamListener> listeners;
 	
 	
 	/**
@@ -87,10 +87,10 @@ public class Webcam implements IWebcam {
 				searching = false;
 			};
 		}
-		
-		// produce a new frame every 500 ms
+		// produce a new frame every 100 ms
 		final Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
+		timer.schedule(new TimerTask() {                    
+                        
 			@Override
 			public void run() {
 				try {
@@ -103,7 +103,7 @@ public class Webcam implements IWebcam {
 					listeners.forEach(listener -> listener.disconnected());
 				}
 			}
-		}, 0, 1000 / FPS);
+		}, 0, FRAME_DELAY);
 	}
 	
 	/**
