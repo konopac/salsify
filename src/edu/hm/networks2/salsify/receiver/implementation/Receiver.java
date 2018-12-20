@@ -56,7 +56,7 @@ public class Receiver extends Thread implements IReceiver {
                  System.out.println("RECEIVER: \t received fragment " + salsifyFragment.getFragmentIndex() + " for frame " + salsifyFragment.getFrameIndex());
 
                  // TODO: calculate bandwith
-                 final int bandwidth = 0;
+                 final int bandwidth = -1;
                  
                  // send an acknowledgement
                  sendAck(salsifyFragment.getFrameIndex(), salsifyFragment.getFragmentIndex(), bandwidth);
