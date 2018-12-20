@@ -44,11 +44,11 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
     private int lastFrameQuality;
 
     /**
-     *
+     * Locks access to source frame index.
      */
     private final Object lock;
 
-    public Salsify() {
+    public SalsifySenderCore() {
         webcam = new Webcam();
         codec = new Codec();
         sender = new Sender(this);
