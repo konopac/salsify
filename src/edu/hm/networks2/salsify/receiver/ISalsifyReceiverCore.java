@@ -1,11 +1,11 @@
-package edu.hm.networks2.salsify.sender;
+package edu.hm.networks2.salsify.receiver;
 
 /**
- * This interface describes the salsify core for external use and contains all needed methods.
+ * This interface describes the salsify core of the receiver side for external use and contains all needed methods.
  * 
  * @author Philipp
  */
-public interface ISalsify {
+public interface ISalsifyReceiverCore {
 
 	/**
 	 * Start salsify.

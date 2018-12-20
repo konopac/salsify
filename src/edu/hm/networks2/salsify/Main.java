@@ -1,7 +1,9 @@
 package edu.hm.networks2.salsify;
 
-import edu.hm.networks2.salsify.sender.ISalsify;
-import edu.hm.networks2.salsify.sender.implementation.Salsify;
+import edu.hm.networks2.salsify.receiver.ISalsifyReceiverCore;
+import edu.hm.networks2.salsify.receiver.implementation.SalsifyReceiverCore;
+import edu.hm.networks2.salsify.sender.ISalsifySenderCore;
+import edu.hm.networks2.salsify.sender.implementation.SalsifySenderCore;
 
 public class Main {
 
@@ -13,7 +15,7 @@ public class Main {
 		case "sender":
 		case "s":
 			System.out.println("MAIN: \t\t starting salsify sender");
-			ISalsify sender = new Salsify();
+			ISalsifySenderCore sender = new SalsifySenderCore();
 			sender.start();
 			sender.join();
 			System.out.println("MAIN: \t\t stopped salsify sender");
@@ -21,7 +23,9 @@ public class Main {
 		case "receiver":
 		case "r":
 			System.out.println("MAIN: \t\t starting salsify receiver");
-			// TODO
+			ISalsifyReceiverCore receiver = new SalsifyReceiverCore();
+			receiver.start();
+			receiver.join();
 			System.out.println("MAIN: \t\t stopped salsify receiver");
 			break;
 		default:
