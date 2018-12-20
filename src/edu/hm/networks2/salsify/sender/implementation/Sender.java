@@ -5,10 +5,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-import edu.hm.networks2.salsify.common.implementation.SalsifyAck;
-import edu.hm.networks2.salsify.common.implementation.SalsifyFrame;
+import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
+import edu.hm.networks2.salsify.common.packets.SalsifyAck;
+import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import java.util.AbstractMap;
@@ -84,16 +86,6 @@ public class Sender implements ISender {
     }
 
     /**
-     * IP address of the receiver.
-     */
-    private static final String DESTINATION_IP = "localhost";
-
-    /**
-     * Port of the receiver.
-     */
-    private static final int DESTINATION_PORT = 48938;
-
-    /**
      * Socket which is used to send frames and receive ACKs.
      */
     private DatagramSocket socket;
@@ -134,8 +126,8 @@ public class Sender implements ISender {
         latestBandwidth = 0;
 
         try {
-            socket = new DatagramSocket();
-        } catch (SocketException exception) {
+            socket = new DatagramSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP));
+        } catch (SocketException | UnknownHostException exception) {
             System.err.println("Salsify Sender had problems opening a DatagramSocket.");
             System.out.println(exception.toString());
         }
@@ -166,7 +158,7 @@ public class Sender implements ISender {
         for (int index = 0; index < frame.getNumberOfFragments(); index++) {
             final byte[] fragment = frame.getFragment(index).getRawPacket();
             System.out.print(" " + frame.getFragment(index).getFragmentIndex());
-            socket.send(new DatagramPacket(fragment, fragment.length, InetAddress.getByName(DESTINATION_IP), DESTINATION_PORT));
+            socket.send(new DatagramPacket(fragment, fragment.length, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP), NetworkConfiguration.RECEIVER_PORT));
         }
         System.out.println("");
     }

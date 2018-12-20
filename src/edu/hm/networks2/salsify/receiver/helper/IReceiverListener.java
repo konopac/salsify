@@ -13,8 +13,7 @@ public interface IReceiverListener {
 	 * @param data contains the raw frame data
 	 * @param frameIndex is the frame index of the frame
 	 * @param sourceFrameIndex is the source state of the encoding
-	 * @param gracePeriod is the grace period
 	 */
-	void frameReceived(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod);
+	void receiveFrame(byte[] data, int frameIndex, int sourceFrameIndex);
 	
 }

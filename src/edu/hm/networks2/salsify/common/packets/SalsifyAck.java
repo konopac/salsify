@@ -1,4 +1,4 @@
-package edu.hm.networks2.salsify.common.implementation;
+package edu.hm.networks2.salsify.common.packets;
 
 import java.nio.ByteBuffer;
 

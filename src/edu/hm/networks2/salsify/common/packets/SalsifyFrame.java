@@ -4,7 +4,7 @@
  *     - Nico <dassler@hm.edu>
  *     - Philipp <konopac@hm.edu>
  */
-package edu.hm.networks2.salsify.common.implementation;
+package edu.hm.networks2.salsify.common.packets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -203,7 +203,6 @@ public class SalsifyFrame {
      * @return The last fragment. 
      */
     public SalsifyFragment getLastFragment() {
-        System.out.println("Number of elements: " + this.fragments.size());
         return this.fragments.get(this.fragments.size() - 1);
     }
     
