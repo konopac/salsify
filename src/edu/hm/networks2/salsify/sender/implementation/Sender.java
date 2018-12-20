@@ -258,7 +258,7 @@ public class Sender implements ISender {
         if (getAcknowledgements().containsKey(frameIndex)) {
             // is already acknowledged?
             int oldValue = getAcknowledgements().get(frameIndex).getValue();
-            duplicate = oldValue <= fragmentIndex;
+            duplicate = oldValue >= fragmentIndex;
 
             // only modify if old value smaller than new one
             if (oldValue < fragmentIndex) {
