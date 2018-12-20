@@ -4,7 +4,7 @@
  *     - Nico <dassler@hm.edu>
  *     - Philipp <konopac@hm.edu>
  */
-package edu.hm.networks2.salsify.common.implementation;
+package edu.hm.networks2.salsify.common.packets;
 
 import java.util.ArrayList;
 import java.util.Arrays;

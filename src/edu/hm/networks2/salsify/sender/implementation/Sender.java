@@ -7,8 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 
-import edu.hm.networks2.salsify.common.implementation.SalsifyAck;
-import edu.hm.networks2.salsify.common.implementation.SalsifyFrame;
+import edu.hm.networks2.salsify.common.packets.SalsifyAck;
+import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import java.util.AbstractMap;
