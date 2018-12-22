@@ -2,8 +2,6 @@ package edu.hm.networks2.salsify.sender.implementation;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import edu.hm.networks2.salsify.common.ICodec;
@@ -112,34 +110,38 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             lastFrameQuality = qualityWorse;
             System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality");
 
-        }
-        // this is the time we have to send one frame in seconds
-        double frameDelay = Webcam.FRAME_DELAY / 1000.0;
-        long bytesPossible = Math.round(frameDelay * bandwidthEstimate);
+        } else {
+            // this is the time we have to send one frame in seconds
+            double frameDelay = Webcam.FRAME_DELAY / 1000.0;
+            long bytesPossible = Math.round(frameDelay * bandwidthEstimate);
 
-        if (bytesPossible > encodedFrameBetter.length) {
-            // it seems like there is enough bandwidth for the better quality frame available
+            System.out.println("bytes possible: " + bytesPossible + " encoded frame length: " + encodedFrameWorse.length + " - " + encodedFrameBetter.length);
 
-            try {
-                sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
-            } catch (IOException exception) {
-                System.out.println(exception.toString());
+            if (bytesPossible > encodedFrameBetter.length) {
+                // it seems like there is enough bandwidth for the better quality frame available
+
+                try {
+                    sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
+                } catch (IOException exception) {
+                    System.out.println(exception.toString());
+                }
+                lastFrameQuality = qualityBetter;
+                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality");
+            } else if (bytesPossible < encodedFrameBetter.length && bytesPossible > encodedFrameWorse.length) {
+                // it seems like there is enough bandwidth for the worse quality
+                // but not enough for the better quality
+
+                try {
+                    sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
+                } catch (IOException exception) {
+                    System.out.println(exception.toString());
+                }
+                lastFrameQuality = qualityWorse;
+                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality");
+            } else {
+                System.out.println("SALSIFY: \t dropping frame " + currentFrameIndex);
+                lastFrameQuality = qualityWorse - 5;
             }
-            lastFrameQuality = qualityBetter;
-            System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality");
-        }
-
-        if (bytesPossible < encodedFrameBetter.length && bytesPossible > encodedFrameWorse.length) {
-            // it seems like there is enough bandwidth for the worse quality
-            // but not enough for the better quality
-
-            try {
-                sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
-            } catch (IOException exception) {
-                System.out.println(exception.toString());
-            }
-            lastFrameQuality = qualityWorse;
-            System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality");
         }
 
         // if there is not enough bandwidth for any of these frames we will
@@ -165,7 +167,6 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
         System.out.println("SALSIFY: \t received reset notification");
 
         // we need to find the lowest available index
-
         // we'll start with current frame index
         int index = currentFrameIndex;
         // while there is a lower key
