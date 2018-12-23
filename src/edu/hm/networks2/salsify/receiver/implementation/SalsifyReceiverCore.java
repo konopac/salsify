@@ -10,12 +10,7 @@ import edu.hm.networks2.salsify.receiver.ISalsifyReceiverCore;
 import edu.hm.networks2.salsify.receiver.IScreen;
 import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
@@ -52,7 +47,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
 
     @Override
     public void receiveFrame(byte[] data, int frameIndex, int sourceFrameIndex) {
-        System.out.println("SALSIFY: \t processing frame " + frameIndex + " based on source with index " + sourceFrameIndex + "...");
+        System.out.println("SALSIFY: \t processing frame " + frameIndex + " based on source with index " + sourceFrameIndex + " with size " + data.length);
 
         Optional<BufferedImage> sourceState;
         // has no source state?
@@ -67,15 +62,6 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
 
         final Optional<BufferedImage> frame = codec.decode(sourceState, data);
         
-        if (frameIndex == 0) {
-            try {
-                PrintWriter out = new PrintWriter("received.txt");
-                out.print(Arrays.toString(data));
-            } catch (FileNotFoundException ex) {
-                System.out.println("failed opening print writer");
-            }
-        }
-
         if (frame.isPresent()) {
             screen.displayFrame(frame.get());
             sourceStates.put(frameIndex, frame.get());

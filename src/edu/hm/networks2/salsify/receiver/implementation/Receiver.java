@@ -16,6 +16,7 @@ import edu.hm.networks2.salsify.common.packets.SalsifyFragment;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.receiver.IReceiver;
 import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
+import java.util.Arrays;
 
 public class Receiver extends Thread implements IReceiver {
 
@@ -54,16 +55,28 @@ public class Receiver extends Thread implements IReceiver {
     public void run() {
         System.out.println("RECEIVER: \t waiting for fragments");
         // allocate memory for incoming packet data
-        final byte[] fragmentData = ByteBuffer.allocate(SalsifyFragment.MAXIMUM_DATA_SIZE).array();
-        final DatagramPacket fragment = new DatagramPacket(fragmentData, fragmentData.length);
+        final byte[] fragmentData = new byte[SalsifyFragment.COMPLETE_SIZE];
+        final DatagramPacket fragment = new DatagramPacket(fragmentData, SalsifyFragment.COMPLETE_SIZE);
 
         // loop infinite
         while (!isInterrupted()) {
             try {
                 // block until a fragment arrives
                 socket.receive(fragment);
+                System.out.println("RECEIVER: \t received udp packet with size " + fragment.getLength());
                 // extract data from reveived frame
-                final SalsifyFragment salsifyFragment = new SalsifyFragment(fragmentData);
+                final SalsifyFragment salsifyFragment;
+                if (fragment.getLength() == SalsifyFragment.COMPLETE_SIZE) {
+                    // in case the udp packet has the expected size we need
+                    // to extract the complete data
+                    salsifyFragment  = new SalsifyFragment(fragmentData);
+                } else {
+                    // in case the udp packet is smaller than expected we
+                    // need to pass a smaller amount of data
+                    salsifyFragment = new SalsifyFragment(Arrays.copyOf(fragmentData, fragment.getLength()));
+                }
+                
+                
 
                 // first fragment of frame
                 if (latestFrame == null) {

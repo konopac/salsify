@@ -42,7 +42,7 @@ public class Webcam implements IWebcam {
 	/**
 	 * Delay in between two frames.
 	 */
-	public static final int FRAME_DELAY = 100;
+	public static final int FRAME_DELAY = 3000;
 	
 	
 	/**

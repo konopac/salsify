@@ -108,7 +108,7 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                 System.out.println(exception.toString());
             }
             lastFrameQuality = qualityWorse;
-            System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality");
+            System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality and size " + encodedFrameWorse.length);
 
         } else {
             // this is the time we have to send one frame in seconds
@@ -126,7 +126,7 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                     System.out.println(exception.toString());
                 }
                 lastFrameQuality = qualityBetter;
-                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality");
+                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality and size " + encodedFrameBetter.length);
             } else if (bytesPossible < encodedFrameBetter.length && bytesPossible > encodedFrameWorse.length) {
                 // it seems like there is enough bandwidth for the worse quality
                 // but not enough for the better quality
@@ -137,7 +137,7 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                     System.out.println(exception.toString());
                 }
                 lastFrameQuality = qualityWorse;
-                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality");
+                System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality and size " + encodedFrameWorse.length);
             } else {
                 System.out.println("SALSIFY: \t dropping frame " + currentFrameIndex);
                 lastFrameQuality = qualityWorse - 5;

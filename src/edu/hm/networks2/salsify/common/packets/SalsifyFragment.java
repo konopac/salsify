@@ -32,6 +32,11 @@ public class SalsifyFragment {
     public final static int MAXIMUM_DATA_SIZE = 1004;
     
     /**
+     * Complete size including the header is stored here.
+     */
+    public final static int COMPLETE_SIZE = 1024;
+    
+    /**
      * Bytes 20-1023 is data.
      */
     private final int DATA_OFFSET = 20;

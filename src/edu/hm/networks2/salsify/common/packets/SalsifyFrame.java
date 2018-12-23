@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class SalsifyFrame {
    
-   
     private final int frameIndex;
     
     private final int frameIndexState;
@@ -58,11 +57,11 @@ public class SalsifyFrame {
         for (int counter = 0; counter < numberOfFragments; counter++) {
             // this will step like this: 0, 1004, 2008, 3012, ...
             int fragmentStart = counter * SalsifyFragment.MAXIMUM_DATA_SIZE;
-            // this will step like this: 1003, 1007, 1011, ...
-            int fragmentEnd = (counter + 1) * SalsifyFragment.MAXIMUM_DATA_SIZE - 1;
+            // this will step like this: 1004, 2008, 3012, ...
+            int fragmentEnd = (counter + 1) * SalsifyFragment.MAXIMUM_DATA_SIZE;
             // now add
             if (counter == numberOfFragments -1) {
-                // last iteration is special
+                // last iteration is special (end is exclusive)
                 byte[] data = Arrays.copyOfRange(frame, fragmentStart, frame.length);
                 fragments.add(new SalsifyFragment(
                         counter, gracePeriod, 
@@ -70,6 +69,8 @@ public class SalsifyFrame {
                         numberOfFragments - counter - 1, data)
                 );
             } else {
+                // the fragment end index is exclusive so it doesnt matter that its
+                // one higher from the computation above
                 byte[] data = Arrays.copyOfRange(frame, fragmentStart, fragmentEnd);
                 fragments.add(new SalsifyFragment(
                         counter, gracePeriod, 
