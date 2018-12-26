@@ -76,7 +76,8 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             source = Optional.empty();
         } else {
             //
-            source = Optional.of(frames.get(getSourceFrameIndex()));
+            source = Optional.empty();
+//            source = Optional.of(frames.get(getSourceFrameIndex()));
         }
 
         // encode the frame

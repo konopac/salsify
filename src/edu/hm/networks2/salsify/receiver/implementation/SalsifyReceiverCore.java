@@ -9,6 +9,8 @@ import edu.hm.networks2.salsify.receiver.IReceiver;
 import edu.hm.networks2.salsify.receiver.ISalsifyReceiverCore;
 import edu.hm.networks2.salsify.receiver.IScreen;
 import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -47,19 +49,31 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
 
     @Override
     public void receiveFrame(byte[] data, int frameIndex, int sourceFrameIndex) {
-        System.out.println("SALSIFY: \t processing frame " + frameIndex + " based on source with index " + sourceFrameIndex + " with size " + data.length);
+    	
+    	// debug purposes
+    	try {
+    		BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
+    		File outputfile = new File("results/receiver-diff" + frameIndex + ".jpg");
+    		ImageIO.write(image, "jpg", outputfile);
+    	} catch (IOException exception) {
+    		System.out.println("error occured while writing file to disk");
+    	}
+
+    	
+    	System.out.println("SALSIFY: \t processing frame " + frameIndex + " based on source with index " + sourceFrameIndex + " with size " + data.length);
 
         Optional<BufferedImage> sourceState;
         // has no source state?
         if (sourceFrameIndex == -1) {
             sourceState = Optional.empty();
         } else if (sourceStates.containsKey(sourceFrameIndex)) {
-            sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
+            sourceState = Optional.empty();
+//            sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
         } else {
-            System.out.println("SALSIFY: \t fatal error source frame index (" + sourceFrameIndex + ")  is not stored!");
+            System.err.println("SALSIFY: \t fatal error source frame index (" + sourceFrameIndex + ")  is not stored!");
             sourceState = Optional.empty();
         }
-
+        
         final Optional<BufferedImage> frame = codec.decode(sourceState, data);
         
         if (frame.isPresent()) {
@@ -67,7 +81,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             sourceStates.put(frameIndex, frame.get());
             try {
                 // retrieve image
-                File outputfile = new File("results/" + frameIndex + ".jpg");
+                File outputfile = new File("results/result" + frameIndex + ".jpg");
                 ImageIO.write(frame.get(), "jpg", outputfile);
             } catch (IOException exception) {
                 System.out.println("error occured while writing file to disk");

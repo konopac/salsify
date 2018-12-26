@@ -1,5 +1,8 @@
 package edu.hm.networks2.salsify.sender.implementation;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -7,15 +10,17 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
 import edu.hm.networks2.salsify.common.packets.SalsifyAck;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is an implementation of ISender. It sends all frames as UDP-packets and
@@ -147,6 +152,16 @@ public class Sender implements ISender {
      */
     @Override
     public void sendFrame(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod) throws IOException {
+
+    	// debug purposes
+    	try {
+        	BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
+            File outputfile = new File("results/sender-diff" + frameIndex + ".jpg");
+            ImageIO.write(image, "jpg", outputfile);
+        } catch (IOException exception) {
+            System.out.println("error occured while writing file to disk");
+        }
+    	
         // build a salsify frame from input data
         final SalsifyFrame frame = new SalsifyFrame(data, frameIndex, sourceFrameIndex, gracePeriod);
 
