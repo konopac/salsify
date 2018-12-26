@@ -63,7 +63,6 @@ public class Receiver extends Thread implements IReceiver {
             try {
                 // block until a fragment arrives
                 socket.receive(fragment);
-                System.out.println("RECEIVER: \t received udp packet with size " + fragment.getLength());
                 // extract data from reveived frame
                 final SalsifyFragment salsifyFragment;
                 if (fragment.getLength() == SalsifyFragment.COMPLETE_SIZE) {
@@ -89,23 +88,29 @@ public class Receiver extends Thread implements IReceiver {
 
                 System.out.println("RECEIVER: \t received fragment " + salsifyFragment.getFragmentIndex() + " for frame " + salsifyFragment.getFrameIndex());
 
-                // send an acknowledgement
-                sendAck(salsifyFragment.getFrameIndex(), salsifyFragment.getFragmentIndex(), Math.toIntExact(Math.round(bandwidthEstimate)));
-
                 // collect all fragments for one frame before reporting to salsify core
+                boolean packetLoss = false;
                 if (latestFrame == null) {
                     latestFrame = new SalsifyFrame(salsifyFragment);
-                } else if (!latestFrame.addFragment(salsifyFragment)) {
-                    // send a duplicate acck --> not implemented
-                    System.out.println("found duplicate! FEATURE NOT IMPLEMENTED! IGNORING...");
+                } else {
+                	packetLoss = !latestFrame.addFragment(salsifyFragment);
+                }
+                
+                if (packetLoss) {
+                	// send a duplicate ack --> not implemented
+                	System.out.println("RECEIVER: \t sending duplicate ack. FEATURE NOT IMPLEMENTED! IGNORING...");
+                } else {
+                	// send an acknowledgement
+                	sendAck(salsifyFragment.getFrameIndex(), salsifyFragment.getFragmentIndex(), Math.toIntExact(Math.round(bandwidthEstimate)));
+
+                	// if this was the last fragment of the frame and all fragments were collected earlier
+                	if (salsifyFragment.getRemainingFragments() == 0 && latestFrame.getNumberOfFragments() == (salsifyFragment.getFragmentIndex() + 1)) {
+                		listeners.forEach(listener -> listener.receiveFrame(latestFrame.getFrame(), latestFrame.getFrameIndex(), latestFrame.getFrameIndexState()));
+                		// reset frame
+                		latestFrame = null;
+                	}
                 }
 
-                // if this was the last fragment of the frame and all fragments were collected earlier
-                if (salsifyFragment.getRemainingFragments() == 0 && latestFrame.getNumberOfFragments() == (salsifyFragment.getFragmentIndex() + 1)) {
-                    listeners.forEach(listener -> listener.receiveFrame(latestFrame.getFrame(), latestFrame.getFrameIndex(), latestFrame.getFrameIndexState()));
-                    // reset frame
-                    latestFrame = null;
-                }
 
             } catch (SocketException exception) {
                 // thread is stopping when socket is closed
@@ -162,7 +167,7 @@ public class Receiver extends Thread implements IReceiver {
             bandwidthEstimate = MOVING_AVERAGE_FACTOR * small + (1 - MOVING_AVERAGE_FACTOR) * bandwidthEstimate;
             
         }
-        System.out.println("Setting new bandwidth estimate to " + bandwidthEstimate);
+        System.out.println("RECEIVER: \t Setting new bandwidth estimate to " + bandwidthEstimate);
         // update last fragment timestamp
         lastFragmentTimestamp = now;
     }

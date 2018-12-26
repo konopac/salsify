@@ -153,14 +153,12 @@ public class Sender implements ISender {
         // add to acknowledgements
         addUnacknowledgedFrame(frameIndex, frame.getNumberOfFragments());
 
-        System.out.print("SENDER: \t sending frame " + frame.getFrameIndex() + " fragment");
         // send each salsify fragment inside the frame
         for (int index = 0; index < frame.getNumberOfFragments(); index++) {
             final byte[] fragment = frame.getFragment(index).getRawPacket();
-            System.out.print(" " + frame.getFragment(index).getFragmentIndex());
+            System.out.println("SENDER: \t sending frame " + frame.getFrameIndex() + " fragment " + frame.getFragment(index).getFragmentIndex());
             socket.send(new DatagramPacket(fragment, fragment.length, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP), NetworkConfiguration.RECEIVER_PORT));
         }
-        System.out.println("");
     }
 
     /**
