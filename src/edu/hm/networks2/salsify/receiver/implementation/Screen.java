@@ -1,15 +1,20 @@
 package edu.hm.networks2.salsify.receiver.implementation;
 
-import java.awt.image.BufferedImage;
-import javax.swing.JApplet;
-import edu.hm.networks2.salsify.receiver.IScreen;
 import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import edu.hm.networks2.salsify.receiver.IScreen;
+
 public class Screen implements IScreen {
 
+	private static final int WIDTH = 640;
+	private static final int HEIGHT = 360;
+	
     private final JFrame parent;
     private final JLabel imageContainer;
 
@@ -17,9 +22,8 @@ public class Screen implements IScreen {
         super();
         this.parent = new JFrame("Salsify Receiver");
         this.parent.getContentPane().setLayout(new FlowLayout());
-        this.parent.setSize(1280, 720);
+        this.parent.setSize(WIDTH, HEIGHT);
         this.imageContainer = new JLabel();
-        this.imageContainer.setSize(1280, 720);
         this.parent.getContentPane().add(this.imageContainer);
     }
     
@@ -32,7 +36,8 @@ public class Screen implements IScreen {
     public void displayFrame(BufferedImage frame) {
         System.out.println("SCREEN: \t displaying frame " + frame);
         imageContainer.removeAll();
-        imageContainer.setIcon(new ImageIcon(frame));
+        final ImageIcon image = new ImageIcon(frame.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_SMOOTH));
+        imageContainer.setIcon(image);
     }
     
     
