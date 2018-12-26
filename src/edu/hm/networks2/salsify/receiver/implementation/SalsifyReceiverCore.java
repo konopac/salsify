@@ -67,7 +67,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             sourceStates.put(frameIndex, frame.get());
             try {
                 // retrieve image
-                File outputfile = new File(frameIndex + ".jpg");
+                File outputfile = new File("results/" + frameIndex + ".jpg");
                 ImageIO.write(frame.get(), "jpg", outputfile);
             } catch (IOException exception) {
                 System.out.println("error occured while writing file to disk");
