@@ -5,17 +5,19 @@ import java.util.Optional;
 
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
+import edu.hm.networks2.salsify.common.implementation.GlobalLogger;
 import edu.hm.networks2.salsify.receiver.IReceiver;
 import edu.hm.networks2.salsify.receiver.ISalsifyReceiverCore;
 import edu.hm.networks2.salsify.receiver.IScreen;
 import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
+import jdk.nashorn.internal.objects.Global;
 
 public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListener {
 
@@ -51,16 +53,16 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
     public void receiveFrame(byte[] data, int frameIndex, int sourceFrameIndex) {
     	
     	// debug purposes
-    	try {
-    		BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
-    		File outputfile = new File("results" + File.separator + "receiver-diff" + frameIndex + ".jpg");
-    		ImageIO.write(image, "jpg", outputfile);
-    	} catch (IOException exception) {
-    		System.out.println("error occured while writing file to disk");
-    	}
+//    	try {
+//    		BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
+//    		File outputfile = new File("results" + File.separator + "receiver-diff" + frameIndex + ".jpg");
+//    		ImageIO.write(image, "jpg", outputfile);
+//    	} catch (IOException exception) {
+//    		System.out.println("error occured while writing file to disk");
+//    	}
 
     	
-    	System.out.println("SALSIFY: \t processing frame " + frameIndex + " based on source with index " + sourceFrameIndex + " with size " + data.length);
+        GlobalLogger.getInstance().log(Level.INFO, "Received complete frame with index {0} based on frame with index {1}from transport layer! Decoding and displaying now!", new Object[]{frameIndex, sourceFrameIndex});
 
         Optional<BufferedImage> sourceState;
         // has no source state?
@@ -73,6 +75,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             // sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
         } else {
             System.err.println("SALSIFY: \t fatal error source frame index (" + sourceFrameIndex + ")  is not stored!");
+            GlobalLogger.getInstance().log(Level.SEVERE, "Source frame index ({0})  is not stored! Needed for frame with index {1}.", new Object[]{sourceFrameIndex, frameIndex});
             sourceState = Optional.empty();
         }
         
@@ -81,13 +84,15 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
         if (frame.isPresent()) {
             screen.displayFrame(frame.get());
             sourceStates.put(frameIndex, frame.get());
-            try {
-                // retrieve image
-                File outputfile = new File("results" + File.separator + "result" + frameIndex + ".jpg");
-                ImageIO.write(frame.get(), "jpg", outputfile);
-            } catch (IOException exception) {
-                System.out.println("error occured while writing file to disk");
-            }
+            
+            // debug purposes
+//            try {
+//                // retrieve image
+//                File outputfile = new File("results" + File.separator + "result" + frameIndex + ".jpg");
+//                ImageIO.write(frame.get(), "jpg", outputfile);
+//            } catch (IOException exception) {
+//                System.out.println("error occured while writing file to disk");
+//            }
         }
 
     }

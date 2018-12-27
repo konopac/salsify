@@ -34,7 +34,6 @@ public class Screen implements IScreen {
     
     @Override
     public void displayFrame(BufferedImage frame) {
-        System.out.println("SCREEN: \t displaying frame " + frame);
         imageContainer.removeAll();
         final ImageIcon image = new ImageIcon(frame.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_SMOOTH));
         imageContainer.setIcon(image);
