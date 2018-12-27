@@ -17,7 +17,9 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
+import edu.hm.networks2.salsify.common.implementation.LimitedSocket;
 import edu.hm.networks2.salsify.common.packets.SalsifyAck;
+import edu.hm.networks2.salsify.common.packets.SalsifyFragment;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
@@ -131,7 +133,7 @@ public class Sender implements ISender {
         latestBandwidth = -1;
 
         try {
-            socket = new DatagramSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP));
+            socket = new LimitedSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP), SalsifyFragment.COMPLETE_SIZE);
         } catch (SocketException | UnknownHostException exception) {
             System.err.println("Salsify Sender had problems opening a DatagramSocket.");
             System.out.println(exception.toString());

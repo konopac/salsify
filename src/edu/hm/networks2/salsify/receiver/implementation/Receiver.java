@@ -6,17 +6,17 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
+import edu.hm.networks2.salsify.common.implementation.LimitedSocket;
 import edu.hm.networks2.salsify.common.packets.SalsifyAck;
 import edu.hm.networks2.salsify.common.packets.SalsifyFragment;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.receiver.IReceiver;
 import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
-import java.util.Arrays;
 
 public class Receiver extends Thread implements IReceiver {
 	
@@ -45,7 +45,7 @@ public class Receiver extends Thread implements IReceiver {
         listeners = new ArrayList<>();
 
         try {
-            socket = new DatagramSocket(NetworkConfiguration.RECEIVER_PORT, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP));
+            socket = new LimitedSocket(NetworkConfiguration.RECEIVER_PORT, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP), SalsifyAck.SIZE);
         } catch (SocketException | UnknownHostException exception) {
             System.err.println("Salsify Receiver had problems opening a DatagramSocket.");
             System.out.println(exception.toString());
