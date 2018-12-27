@@ -156,7 +156,7 @@ public class Sender implements ISender {
     	// debug purposes
     	try {
         	BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
-            File outputfile = new File("results/sender-diff" + frameIndex + ".jpg");
+            File outputfile = new File("results" + File.separator + "sender-diff" + frameIndex + ".jpg");
             ImageIO.write(image, "jpg", outputfile);
         } catch (IOException exception) {
             System.out.println("error occured while writing file to disk");

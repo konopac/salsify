@@ -53,7 +53,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
     	// debug purposes
     	try {
     		BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
-    		File outputfile = new File("results/receiver-diff" + frameIndex + ".jpg");
+    		File outputfile = new File("results" + File.separator + "receiver-diff" + frameIndex + ".jpg");
     		ImageIO.write(image, "jpg", outputfile);
     	} catch (IOException exception) {
     		System.out.println("error occured while writing file to disk");
@@ -68,7 +68,9 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             sourceState = Optional.empty();
         } else if (sourceStates.containsKey(sourceFrameIndex)) {
             sourceState = Optional.empty();
-//            sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
+            // this is to disable encoding based on a source state
+            // we will always send encoding based only on the current image
+            // sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
         } else {
             System.err.println("SALSIFY: \t fatal error source frame index (" + sourceFrameIndex + ")  is not stored!");
             sourceState = Optional.empty();
@@ -81,7 +83,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             sourceStates.put(frameIndex, frame.get());
             try {
                 // retrieve image
-                File outputfile = new File("results/result" + frameIndex + ".jpg");
+                File outputfile = new File("results" + File.separator + "result" + frameIndex + ".jpg");
                 ImageIO.write(frame.get(), "jpg", outputfile);
             } catch (IOException exception) {
                 System.out.println("error occured while writing file to disk");
