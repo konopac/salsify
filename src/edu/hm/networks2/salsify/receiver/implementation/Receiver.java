@@ -98,7 +98,6 @@ public class Receiver extends Thread implements IReceiver {
                 
                 if (packetLoss) {
                     // send a duplicate ack
-                    System.out.println("PACKET-LOSS: \t sending duplicate ACK");
                     GlobalLogger.getInstance().log(Level.INFO, 
                             "Received fragment out of order which indicates PACKET LOSS! Sending duplicate ACK for frame {0} and fragment {1}.", 
                             new Object[]{latestFrameIndex, latestFragmentIndex});
@@ -185,7 +184,7 @@ public class Receiver extends Thread implements IReceiver {
             bandwidthEstimate = MOVING_AVERAGE_FACTOR * small + (1 - MOVING_AVERAGE_FACTOR) * bandwidthEstimate;
             
         }
-        GlobalLogger.getInstance().log(Level.INFO, "Bandwidth estimate: {0}", bandwidthEstimate);
+        //GlobalLogger.getInstance().log(Level.INFO, "Bandwidth estimate: {0}", bandwidthEstimate);
         // update last fragment timestamp
         lastFragmentTimestamp = now;
     }

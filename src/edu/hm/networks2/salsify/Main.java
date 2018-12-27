@@ -24,11 +24,11 @@ public class Main {
                 break;
             case "receiver":
             case "r":
-                System.out.println("MAIN: \t\t starting salsify receiver");
+                GlobalLogger.getInstance("Receiver_").info("Starting salsify receiver...");
                 ISalsifyReceiverCore receiver = new SalsifyReceiverCore();
                 receiver.start();
                 receiver.join();
-                System.out.println("MAIN: \t\t stopped salsify receiver");
+                GlobalLogger.getInstance().info("Stopped salsify reciever.");
                 break;
             default:
                 System.out.println("Please start this program with one of the following arguments to determine which mode to use:\n");

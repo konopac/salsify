@@ -1,6 +1,5 @@
 package edu.hm.networks2.salsify.sender;
 
-import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import java.io.IOException;
 
 /**
