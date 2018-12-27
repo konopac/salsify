@@ -27,7 +27,7 @@ public class Webcam implements IWebcam {
 	/**
 	 * Directory that contains all frames.
 	 */
-	private static final String FRAME_DIRECTORY= System.getProperty("user.dir") + File.separator + "newSmallerFrames" + File.separator;
+	private static final String FRAME_DIRECTORY= System.getProperty("user.dir") + File.separator + "frames864" + File.separator;
 	
 	/**
 	 * Prefix for all frame names.

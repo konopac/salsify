@@ -53,7 +53,7 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
         frames = new HashMap<>();
         frames.put(-1, null);
         sourceFrameIndex = -1;
-        lastFrameQuality = 70;  // 70% quality is jpeg default
+        lastFrameQuality = 0;  // 70% quality is jpeg default
         lock = new Object();
     }
 
