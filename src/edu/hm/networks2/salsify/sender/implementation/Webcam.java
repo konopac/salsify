@@ -27,7 +27,7 @@ public class Webcam implements IWebcam {
 	/**
 	 * Directory that contains all frames.
 	 */
-	private static final String FRAME_DIRECTORY= System.getProperty("user.dir") + File.separator + "frames" + File.separator;
+	private static final String FRAME_DIRECTORY= System.getProperty("user.dir") + File.separator + "newSmallerFrames" + File.separator;
 	
 	/**
 	 * Prefix for all frame names.
@@ -37,12 +37,12 @@ public class Webcam implements IWebcam {
 	/**
 	 * File extension for all frames.
 	 */
-	private static final String FRAME_EXTENSION = ".jpg";
+	private static final String FRAME_EXTENSION = ".jpeg";
 	
 	/**
 	 * Delay in between two frames.
 	 */
-	public static final int FRAME_DELAY = 3000;
+	public static final int FRAME_DELAY = 500;
 	
 	
 	/**

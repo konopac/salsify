@@ -19,18 +19,22 @@ import edu.hm.networks2.salsify.receiver.helper.IReceiverListener;
 import java.util.Arrays;
 
 public class Receiver extends Thread implements IReceiver {
+	
+	private static final double MOVING_AVERAGE_FACTOR = 0.1;
+	
+	private static final double BILLION = 1000000000.0;
 
     private final List<IReceiverListener> listeners;
+
+    private int latestFrameIndex;
+    
+    private int latestFragmentIndex;
 
     private SalsifyFrame latestFrame;
 
     private long lastFragmentTimestamp;
 
     private double bandwidthEstimate;
-
-    private static final double MOVING_AVERAGE_FACTOR = 0.1;
-
-    private static final double BILLION = 1000000000.0;
 
     /**
      * Socket which is used to send ACKS and receive frames.
@@ -49,6 +53,8 @@ public class Receiver extends Thread implements IReceiver {
 
         this.lastFragmentTimestamp = 0;
         this.bandwidthEstimate = -1;
+        this.latestFrameIndex = -1;
+        this.latestFragmentIndex = -1;
     }
 
     @Override
@@ -63,7 +69,8 @@ public class Receiver extends Thread implements IReceiver {
             try {
                 // block until a fragment arrives
                 socket.receive(fragment);
-                // extract data from reveived frame
+                
+                // extract data from received frame
                 final SalsifyFragment salsifyFragment;
                 if (fragment.getLength() == SalsifyFragment.COMPLETE_SIZE) {
                     // in case the udp packet has the expected size we need
@@ -74,40 +81,56 @@ public class Receiver extends Thread implements IReceiver {
                     // need to pass a smaller amount of data
                     salsifyFragment = new SalsifyFragment(Arrays.copyOf(fragmentData, fragment.getLength()));
                 }
-                
-                
-
-                // first fragment of frame
-                if (latestFrame == null) {
-                    // this should happen on every first fragment of a new frame
-                    startBandwidthMeasurement();
-                } else {
-                    estimateBandwidth(salsifyFragment.getSize());
-
-                }
-
                 System.out.println("RECEIVER: \t received fragment " + salsifyFragment.getFragmentIndex() + " for frame " + salsifyFragment.getFrameIndex());
-
-                // collect all fragments for one frame before reporting to salsify core
-                boolean packetLoss = false;
-                if (latestFrame == null) {
-                    latestFrame = new SalsifyFrame(salsifyFragment);
-                } else {
-                	packetLoss = !latestFrame.addFragment(salsifyFragment);
-                }
+                
+                // true, if this is the first fragment of the frame
+                final boolean first =
+                		// this frame index is bigger than the last received frame index
+                		latestFrameIndex < salsifyFragment.getFrameIndex()
+                		// this fragment index is 0
+						&& salsifyFragment.getFragmentIndex() == 0;
+                
+                boolean packetLoss =
+                		// not the first packet of this frame
+                		!first
+                		&& (
+                			// this fragment does not belong to the currently collected frame
+                			latestFrameIndex != salsifyFragment.getFrameIndex()
+	                		// this fragment index is not the expected fragment index
+	                		|| latestFragmentIndex + 1 != salsifyFragment.getFragmentIndex()
+	                	);
                 
                 if (packetLoss) {
-                	// send a duplicate ack --> not implemented
-                	System.out.println("RECEIVER: \t sending duplicate ack. FEATURE NOT IMPLEMENTED! IGNORING...");
+                	// send a duplicate ack
+                	System.out.println("PACKET-LOSS: \t sending duplicate ACK");
+                	sendAck(latestFrameIndex, latestFragmentIndex, Math.toIntExact(Math.round(bandwidthEstimate)));
                 } else {
                 	// send an acknowledgement
                 	sendAck(salsifyFragment.getFrameIndex(), salsifyFragment.getFragmentIndex(), Math.toIntExact(Math.round(bandwidthEstimate)));
 
-                	// if this was the last fragment of the frame and all fragments were collected earlier
-                	if (salsifyFragment.getRemainingFragments() == 0 && latestFrame.getNumberOfFragments() == (salsifyFragment.getFragmentIndex() + 1)) {
+                	// packet was accepted, so set it as the last accepted packet
+                	latestFrameIndex = salsifyFragment.getFrameIndex();
+                	latestFragmentIndex = salsifyFragment.getFragmentIndex();
+
+                	// estimate bandwidth and collect the fragment
+                    if (first) {
+                        startBandwidthMeasurement();
+                        latestFrame = new SalsifyFrame(salsifyFragment);
+                    } else {
+                        estimateBandwidth(salsifyFragment.getSize());
+                        latestFrame.addFragment(salsifyFragment);
+                    }
+                	
+                    // true, if this is the last fragment of the frame
+                    final boolean last =
+                    		// this fragment was the last fragment of the frame
+                    		salsifyFragment.getRemainingFragments() == 0
+                    		// all fragments were collected earlier
+                    		&& latestFrame.getNumberOfFragments() == (salsifyFragment.getFragmentIndex() + 1);
+
+                    // notify the salsify core about a new frame
+                	if (last) {
                 		listeners.forEach(listener -> listener.receiveFrame(latestFrame.getFrame(), latestFrame.getFrameIndex(), latestFrame.getFrameIndexState()));
-                		// reset frame
-                		latestFrame = null;
                 	}
                 }
 
@@ -132,7 +155,7 @@ public class Receiver extends Thread implements IReceiver {
         final SalsifyAck ack = new SalsifyAck(frameIndex, fragmentIndex, bandwidth);
 
         // send ack
-        System.out.println("ACK: \t\t sending ack for frame " + ack.getFrameIndex() + " fragment " + ack.getFragmentIndex() + " with bandwidth " + bandwidth);
+        System.out.println("ACK: \t\t sending ACK for frame " + ack.getFrameIndex() + " fragment " + ack.getFragmentIndex() + " with bandwidth " + bandwidth);
         final byte[] rawData = ack.getRawData();
         socket.send(new DatagramPacket(rawData, rawData.length, InetAddress.getByName(NetworkConfiguration.SENDER_IP), NetworkConfiguration.SENDER_PORT));
     }
