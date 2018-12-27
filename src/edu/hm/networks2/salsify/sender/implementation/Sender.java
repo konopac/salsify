@@ -17,12 +17,14 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
+import edu.hm.networks2.salsify.common.implementation.GlobalLogger;
 import edu.hm.networks2.salsify.common.implementation.LimitedSocket;
 import edu.hm.networks2.salsify.common.packets.SalsifyAck;
 import edu.hm.networks2.salsify.common.packets.SalsifyFragment;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
+import java.util.logging.Level;
 
 /**
  * This is an implementation of ISender. It sends all frames as UDP-packets and
@@ -49,7 +51,6 @@ public class Sender implements ISender {
          */
         @Override
         public void run() {
-            System.out.println("ACK-RECEIVER: \t waiting for ACKs");
             // allocate memory for incoming ack data
             final byte[] ackData = ByteBuffer.allocate(SalsifyAck.SIZE).array();
             final DatagramPacket ack = new DatagramPacket(ackData, ackData.length);
@@ -61,7 +62,6 @@ public class Sender implements ISender {
                     socket.receive(ack);
                     // extract data from reveived ACK
                     final SalsifyAck salsifyAck = new SalsifyAck(ackData);
-                    System.out.println("ACK-RECEIVER: \t received ACK for frame " + salsifyAck.getFrameIndex() + " fragment " + salsifyAck.getFragmentIndex());
                     // set new inter arrival time
                     setLatestBandwidth(salsifyAck.getBandwidth());
 
@@ -70,10 +70,9 @@ public class Sender implements ISender {
 
                 } catch (SocketException exception) {
                     // thread is stopping when socket is closed
-                    System.out.println("ACK-RECEIVER: \t stopped waiting for ACKs");
+                    GlobalLogger.getInstance().log(Level.SEVERE, "Stopped waiting for ACKs {0}", exception.toString());
                 } catch (IOException exception) {
-                    System.err.println("Salsify Sender had problems receiving ACKs.");
-                    System.out.println(exception.toString());
+                    GlobalLogger.getInstance().log(Level.SEVERE, "Salsify Sender had problems receiving ACKs. {0}", exception.toString());
                 }
             }
         }
@@ -135,8 +134,7 @@ public class Sender implements ISender {
         try {
             socket = new LimitedSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP), SalsifyFragment.COMPLETE_SIZE);
         } catch (SocketException | UnknownHostException exception) {
-            System.err.println("Salsify Sender had problems opening a DatagramSocket.");
-            System.out.println(exception.toString());
+            GlobalLogger.getInstance().log(Level.SEVERE, "Salsify Sender had problems opening a DatagramSocket. {0}", exception.toString());
         }
         acknowledgements = new HashMap<>();
         ackReceiver = new AckReceiver();
@@ -156,13 +154,13 @@ public class Sender implements ISender {
     public void sendFrame(byte[] data, int frameIndex, int sourceFrameIndex, int gracePeriod) throws IOException {
 
     	// debug purposes
-    	try {
-        	BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
-            File outputfile = new File("results" + File.separator + "sender-diff" + frameIndex + ".jpg");
-            ImageIO.write(image, "jpg", outputfile);
-        } catch (IOException exception) {
-            System.out.println("error occured while writing file to disk");
-        }
+//    	try {
+//        	BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
+//            File outputfile = new File("results" + File.separator + "sender-diff" + frameIndex + ".jpg");
+//            ImageIO.write(image, "jpg", outputfile);
+//        } catch (IOException exception) {
+//            System.out.println("error occured while writing file to disk");
+//        }
     	
         // build a salsify frame from input data
         final SalsifyFrame frame = new SalsifyFrame(data, frameIndex, sourceFrameIndex, gracePeriod);
@@ -173,7 +171,6 @@ public class Sender implements ISender {
         // send each salsify fragment inside the frame
         for (int index = 0; index < frame.getNumberOfFragments(); index++) {
             final byte[] fragment = frame.getFragment(index).getRawPacket();
-            System.out.println("SENDER: \t sending frame " + frame.getFrameIndex() + " fragment " + frame.getFragment(index).getFragmentIndex());
             socket.send(new DatagramPacket(fragment, fragment.length, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP), NetworkConfiguration.RECEIVER_PORT));
         }
     }
@@ -297,19 +294,12 @@ public class Sender implements ISender {
             // DUPLICATE FOUND!
             // listener has to reset back to a frame that is completely 
             // acknowledged
-            System.out.println("SENDER: \t received duplicate frame "
-                    + frameIndex
-                    + " fragment "
-                    + fragmentIndex
-                    + ". Notifying listener to reset");
             listener.reset();
 
         } else {
             // everything fine
             if (isFrameAcknowledged(frameIndex)) {
                 // perfect we have a complete frame --> report to salsify
-                System.out.println("SENDER: \t notifying listener about complete frame "
-                        + frameIndex);
                 listener.acknowledged(frameIndex);
                 // we dont need to wait for acknowledgements for older frames than this
                 int index = frameIndex -1;

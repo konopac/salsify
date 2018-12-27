@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
+import edu.hm.networks2.salsify.common.implementation.GlobalLogger;
 import edu.hm.networks2.salsify.sender.ISalsifySenderCore;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.IWebcam;
@@ -13,6 +14,7 @@ import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import edu.hm.networks2.salsify.sender.helper.IWebcamListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, ITransportProtocolListener {
 
@@ -65,7 +67,6 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
 
     @Override
     public void receiveFrame(BufferedImage frame) {
-        System.out.println("SALSIFY: \t processing frame " + currentFrameIndex);
         // store frame until this frame is acknowledged by the receiver
         frames.put(currentFrameIndex, frame);
 
@@ -77,7 +78,7 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
         } else {
             //
             source = Optional.empty();
-//            source = Optional.of(frames.get(getSourceFrameIndex()));
+            //source = Optional.of(frames.get(getSourceFrameIndex()));
         }
 
         // encode the frame
@@ -103,11 +104,11 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             // it seems like there is no bandwidth data available yet
 
             // send the lower quality version
-        	System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality and size " + encodedFrameWorse.length);
+            GlobalLogger.getInstance().log(Level.INFO, "Sending low quality ({0}) because we have no bandwidth estimate yet. Length: {1}", new Object[]{qualityWorse, encodedFrameWorse.length});
             try {
                 sender.sendFrame(encodedFrameWorse, currentFrameIndex, getSourceFrameIndex(), 0);
             } catch (IOException exception) {
-                System.out.println(exception.toString());
+                GlobalLogger.getInstance().log(Level.SEVERE, "Error occured while sending frame: {0}", exception.toString());
             }
             lastFrameQuality = qualityWorse;
 
@@ -116,31 +117,30 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             double frameDelay = Webcam.FRAME_DELAY / 1000.0;
             long bytesPossible = Math.round(frameDelay * bandwidthEstimate);
 
-            System.out.println("SALSIFY: \t bytes possible: " + bytesPossible + " encoded frame length: " + encodedFrameWorse.length + " - " + encodedFrameBetter.length);
-
             if (bytesPossible > encodedFrameBetter.length) {
                 // it seems like there is enough bandwidth for the better quality frame available
+                GlobalLogger.getInstance().log(Level.INFO, "Sending frame {0} with high quality ({1}) because it fits into possible bytes {2} with length: {3}", new Object[]{currentFrameIndex, qualityBetter, bytesPossible, encodedFrameBetter.length});
 
-            	System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with higher quality and size " + encodedFrameBetter.length);
                 try {
                     sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
                 } catch (IOException exception) {
-                    System.out.println(exception.toString());
+                    GlobalLogger.getInstance().severe(exception.toString());
                 }
                 lastFrameQuality = qualityBetter;
             } else if (bytesPossible < encodedFrameBetter.length && bytesPossible > encodedFrameWorse.length) {
                 // it seems like there is enough bandwidth for the worse quality
                 // but not enough for the better quality
+                
+                GlobalLogger.getInstance().log(Level.INFO, "Sending frame {0} with low quality ({1}) because it fits into possible bytes {2} with length: {3}", new Object[]{currentFrameIndex, qualityWorse, bytesPossible, encodedFrameBetter.length});
 
-            	System.out.println("SALSIFY: \t sending frame " + currentFrameIndex + " with lower quality and size " + encodedFrameWorse.length);
                 try {
                     sender.sendFrame(encodedFrameBetter, currentFrameIndex, getSourceFrameIndex(), 0);
                 } catch (IOException exception) {
-                    System.out.println(exception.toString());
+                    GlobalLogger.getInstance().severe(exception.toString());
                 }
                 lastFrameQuality = qualityWorse;
             } else {
-                System.out.println("SALSIFY: \t dropping frame " + currentFrameIndex);
+                GlobalLogger.getInstance().log(Level.INFO, "Dropping frame {0} because it does not fit into possible bytes {1} with length: {2}", new Object[]{currentFrameIndex, bytesPossible, encodedFrameBetter.length});
                 lastFrameQuality = qualityWorse - 5;
             }
         }
@@ -165,7 +165,6 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
 
     @Override
     public void reset() {
-        System.out.println("SALSIFY: \t received reset notification");
 
         // we need to find the lowest available index
         // we'll start with current frame index
@@ -175,19 +174,27 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             index--;
         }
 
-        System.out.println("SALSIFY: \t received reset notification. Resetting to source with index " + index);
+        
 
+        
         // the result of the above might be -1 --> we have no basis yet
         // everything else means that is our new basis
         setSourceFrameIndex(index);
-
+        // adjust quality...
+        if (lastFrameQuality - 20 > 0) {
+            lastFrameQuality = lastFrameQuality - 20;
+        } else {
+            lastFrameQuality = 0;
+        }   
+        
+        GlobalLogger.getInstance().log(Level.INFO, "Received reset notification (duplicate ack). Resetting to source with index {0} and quality {1}.", new Object[]{index, lastFrameQuality});
+        
         // also tell sender to reset
         sender.resetSender();
     }
 
     @Override
     public void acknowledged(int frameIndex) {
-        System.out.println("SALSIFY: \t received ack for frame " + frameIndex);
         // remove previous frames from map (except there are none)
         boolean moreFramesToRemove = true;
         int index = frameIndex - 1;
