@@ -16,6 +16,8 @@ public class LimitedSocket extends DatagramSocket {
 	private static final int THROUGHPUT = 100_000;
 
 	private final Queue<DatagramPacket> queue;
+	
+	private boolean loseNextPacket;
 
 	public LimitedSocket(int port, InetAddress ip, int packetSize) throws SocketException, UnknownHostException {
 		super(port, ip);
@@ -34,14 +36,19 @@ public class LimitedSocket extends DatagramSocket {
 				final DatagramPacket packet = queue.poll();
 				// if it exists, send it
 				if (packet != null) {
-					try {
-						sendSuper(packet);
-					} catch (SocketException exception) {
-	                    // thread is stopping when socket is closed
-						cancel();
-					} catch (IOException exception) {
-						System.err.println("Error while sending packet from queue.");
-						System.out.println(exception);
+					// is a packet loss forced?
+					if (loseNextPacket) {
+						loseNextPacket = false;
+					} else {
+						try {
+							sendSuper(packet);
+						} catch (SocketException exception) {
+		                    // thread is stopping when socket is closed
+							cancel();
+						} catch (IOException exception) {
+							System.err.println("Error while sending packet from queue.");
+							System.out.println(exception);
+						}
 					}
 				}
 			}
@@ -56,6 +63,10 @@ public class LimitedSocket extends DatagramSocket {
 		queue.add(packet);
 	}
 
+	public void loseNexPacket() {
+		loseNextPacket = true;
+	}
+	
 
 	/**
 	 * Small hack, so we can access super.send() within the timer task.

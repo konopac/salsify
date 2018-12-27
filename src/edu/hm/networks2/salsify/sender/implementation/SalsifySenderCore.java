@@ -1,8 +1,15 @@
 package edu.hm.networks2.salsify.sender.implementation;
 
+import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
 
 import edu.hm.networks2.salsify.common.ICodec;
 import edu.hm.networks2.salsify.common.implementation.Codec;
@@ -12,9 +19,6 @@ import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.IWebcam;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
 import edu.hm.networks2.salsify.sender.helper.IWebcamListener;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
 
 public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, ITransportProtocolListener {
 
@@ -47,7 +51,9 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
      * Locks access to source frame index.
      */
     private final Object lock;
-
+    
+    private final JFrame parent;
+    
     public SalsifySenderCore() {
         webcam = new Webcam();
         codec = new Codec();
@@ -57,10 +63,21 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
         sourceFrameIndex = -1;
         lastFrameQuality = 0;  // 70% quality is jpeg default
         lock = new Object();
+        
+        // show a GUI with a button for forced packet loss
+        parent = new JFrame("Salsify Receiver");
+        parent.getContentPane().setLayout(new FlowLayout());
+        parent.setSize(180, 100);
+        final JButton packetLossButton = new JButton("Packet Loss!");
+        packetLossButton.addActionListener(event -> {
+        	sender.loseNexPacket();
+        });
+        parent.getContentPane().add(packetLossButton);
     }
 
     @Override
     public void start() {
+        parent.setVisible(true);
         webcam.register(this);
         webcam.start();
     }

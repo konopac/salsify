@@ -1,11 +1,7 @@
 package edu.hm.networks2.salsify.sender.implementation;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -13,8 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.imageio.ImageIO;
+import java.util.logging.Level;
 
 import edu.hm.networks2.salsify.common.config.NetworkConfiguration;
 import edu.hm.networks2.salsify.common.implementation.GlobalLogger;
@@ -24,7 +19,6 @@ import edu.hm.networks2.salsify.common.packets.SalsifyFragment;
 import edu.hm.networks2.salsify.common.packets.SalsifyFrame;
 import edu.hm.networks2.salsify.sender.ISender;
 import edu.hm.networks2.salsify.sender.helper.ITransportProtocolListener;
-import java.util.logging.Level;
 
 /**
  * This is an implementation of ISender. It sends all frames as UDP-packets and
@@ -94,7 +88,7 @@ public class Sender implements ISender {
     /**
      * Socket which is used to send frames and receive ACKs.
      */
-    private DatagramSocket socket;
+    private LimitedSocket socket;
 
     /**
      * Thread that receives ACKs.
@@ -318,6 +312,11 @@ public class Sender implements ISender {
         getAcknowledgements().clear();
     }
 
+    @Override
+    public void loseNexPacket() {
+    	socket.loseNexPacket();
+    }
+    
     /**
      * Synchronized access to acknowledgements.
      * @return acknowledgements map
