@@ -174,12 +174,21 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             index--;
         }
 
-        GlobalLogger.getInstance().log(Level.INFO, "Received reset notification (duplicate ack). Resetting to source with index {0}", index);
+        
 
+        
         // the result of the above might be -1 --> we have no basis yet
         // everything else means that is our new basis
         setSourceFrameIndex(index);
-
+        // adjust quality...
+        if (lastFrameQuality - 20 > 0) {
+            lastFrameQuality = lastFrameQuality - 20;
+        } else {
+            lastFrameQuality = 0;
+        }   
+        
+        GlobalLogger.getInstance().log(Level.INFO, "Received reset notification (duplicate ack). Resetting to source with index {0} and quality {1}.", new Object[]{index, lastFrameQuality});
+        
         // also tell sender to reset
         sender.resetSender();
     }
