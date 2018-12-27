@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Level;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -66,8 +67,7 @@ public class Codec implements ICodec {
             decodedFrame = 
                     Optional.of(ImageIO.read(new ByteArrayInputStream(encodedFrame)));
         } catch (IOException exception) {
-            System.out.println("Decode: Could not decode encoded frame!");
-            System.out.println(exception.toString());
+            GlobalLogger.getInstance().log(Level.SEVERE, "Decode: Could not decode encoded frame!{0}", exception.toString());
         }
         
         Optional<BufferedImage> result;
@@ -127,10 +127,7 @@ public class Codec implements ICodec {
             jpegImage = Optional.of(byteArrayOutputStream.toByteArray());
 
         } catch (IOException exception) {
-            System.out.println(
-                    "Encode: Error occured while encoding image to jpeg: "
-                    + exception.toString()
-            );
+            GlobalLogger.getInstance().log(Level.SEVERE, "Encode: Error occured while encoding image to jpeg: {0}", exception.toString());
         }
 
         return jpegImage;
