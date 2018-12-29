@@ -69,7 +69,6 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
             // we will always send encoding based only on the current image
             // sourceState = Optional.of(sourceStates.get(sourceFrameIndex));
         } else {
-            System.err.println("SALSIFY: \t fatal error source frame index (" + sourceFrameIndex + ")  is not stored!");
             GlobalLogger.getInstance().log(Level.SEVERE, "Source frame index ({0})  is not stored! Needed for frame with index {1}.", new Object[]{sourceFrameIndex, frameIndex});
             sourceState = Optional.empty();
         }
