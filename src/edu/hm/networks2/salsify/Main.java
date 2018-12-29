@@ -12,12 +12,13 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 
         final String mode = args.length != 0 ? args[0] : "";
+        final String bandwidth = args.length == 2 ? args[1] : "100000";
 
         switch (mode) {
             case "sender":
             case "s":
                 GlobalLogger.getInstance("Sender_").log(Level.INFO, "Starting salsify sender...");
-                ISalsifySenderCore sender = new SalsifySenderCore();
+                ISalsifySenderCore sender = new SalsifySenderCore(Integer.parseInt(bandwidth));
                 sender.start();
                 sender.join();
                 GlobalLogger.getInstance().info("Stopped salsify sender.");
@@ -32,7 +33,7 @@ public class Main {
                 break;
             default:
                 System.out.println("Please start this program with one of the following arguments to determine which mode to use:\n");
-                System.out.println("Sender: \"sender\" or \"s\"");
+                System.out.println("Sender: \"sender\" or \"s\" also provide the bandwidth here as a number (default");
                 System.out.println("Receiver:  \"receiver\" or \"r\"");
                 break;
         }

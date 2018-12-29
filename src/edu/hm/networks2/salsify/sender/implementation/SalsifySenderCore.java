@@ -54,10 +54,10 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
 
     private final JFrame parent;
 
-    public SalsifySenderCore() {
+    public SalsifySenderCore(int bandwidth) {
         webcam = new Webcam();
         codec = new Codec();
-        sender = new Sender(this);
+        sender = new Sender(this, bandwidth);
         frames = new HashMap<>();
         frames.put(-1, null);
         sourceFrameIndex = -1;

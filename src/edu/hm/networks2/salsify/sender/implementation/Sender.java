@@ -122,11 +122,11 @@ public class Sender implements ISender {
      *
      * @param listener The given listener will get notified about events.
      */
-    public Sender(ITransportProtocolListener listener) {
+    public Sender(ITransportProtocolListener listener, int bandwidth) {
         latestBandwidth = -1;
 
         try {
-            socket = new LimitedSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP), SalsifyFragment.COMPLETE_SIZE);
+            socket = new LimitedSocket(NetworkConfiguration.SENDER_PORT, InetAddress.getByName(NetworkConfiguration.SENDER_IP), SalsifyFragment.COMPLETE_SIZE, bandwidth);
         } catch (SocketException | UnknownHostException exception) {
             GlobalLogger.getInstance().log(Level.SEVERE, "Salsify Sender had problems opening a DatagramSocket. {0}", exception.toString());
         }

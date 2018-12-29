@@ -47,7 +47,7 @@ public class Receiver extends Thread implements IReceiver {
         listeners = new ArrayList<>();
         
         try {
-            socket = new LimitedSocket(NetworkConfiguration.RECEIVER_PORT, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP), SalsifyAck.SIZE);
+            socket = new DatagramSocket(NetworkConfiguration.RECEIVER_PORT, InetAddress.getByName(NetworkConfiguration.RECEIVER_IP));
         } catch (SocketException | UnknownHostException exception) {
             GlobalLogger.getInstance().log(Level.SEVERE, "Salsify Receiver had problems opening a DatagramSocket.{0}", exception.toString());
         }

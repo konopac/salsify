@@ -12,19 +12,17 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LimitedSocket extends DatagramSocket {
-	
-	private static final int THROUGHPUT = 100_000;
 
 	private final Queue<DatagramPacket> queue;
 	
 	private boolean loseNextPacket;
 
-	public LimitedSocket(int port, InetAddress ip, int packetSize) throws SocketException, UnknownHostException {
+	public LimitedSocket(int port, InetAddress ip, int packetSize, int bandwidth) throws SocketException, UnknownHostException {
 		super(port, ip);
 		queue = new LinkedBlockingQueue<>();
 		
 		// delay = 1000 ms / number of packets that fit into the network
-		int delay = 1000 / (THROUGHPUT / packetSize);
+		int delay = 1000 / (bandwidth / packetSize);
 		// delay must not be 0 -> fastest = sending every millisecond
 		delay = delay > 0 ? delay : 1;
 		final Timer timer = new Timer();

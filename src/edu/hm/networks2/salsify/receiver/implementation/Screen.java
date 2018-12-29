@@ -12,8 +12,8 @@ import edu.hm.networks2.salsify.receiver.IScreen;
 
 public class Screen implements IScreen {
 
-	private static final int WIDTH = 864;
-	private static final int HEIGHT = 480;
+	private static final int WIDTH = 1920;
+	private static final int HEIGHT = 1080;
 	
     private final JFrame parent;
     private final JLabel imageContainer;
