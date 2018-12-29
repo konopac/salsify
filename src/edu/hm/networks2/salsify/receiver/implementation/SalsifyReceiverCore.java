@@ -57,7 +57,7 @@ public class SalsifyReceiverCore implements ISalsifyReceiverCore, IReceiverListe
 //    	}
 
     	
-        GlobalLogger.getInstance().log(Level.INFO, "Received complete frame with index {0} based on frame with index {1}from transport layer! Decoding and displaying now!", new Object[]{frameIndex, sourceFrameIndex});
+        GlobalLogger.getInstance().log(Level.INFO, "Received complete frame with index {0} based on frame with index {1} from transport layer! Decoding and displaying now!", new Object[]{frameIndex, sourceFrameIndex});
 
         Optional<BufferedImage> sourceState;
         // has no source state?
