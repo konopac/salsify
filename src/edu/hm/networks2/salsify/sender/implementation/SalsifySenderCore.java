@@ -51,9 +51,9 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
      * Locks access to source frame index.
      */
     private final Object lock;
-    
+
     private final JFrame parent;
-    
+
     public SalsifySenderCore() {
         webcam = new Webcam();
         codec = new Codec();
@@ -63,14 +63,14 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
         sourceFrameIndex = -1;
         lastFrameQuality = 0;  // 70% quality is jpeg default
         lock = new Object();
-        
+
         // show a GUI with a button for forced packet loss
         parent = new JFrame("Salsify Receiver");
         parent.getContentPane().setLayout(new FlowLayout());
         parent.setSize(180, 100);
         final JButton packetLossButton = new JButton("Packet Loss!");
         packetLossButton.addActionListener(event -> {
-        	sender.loseNexPacket();
+            sender.loseNexPacket();
         });
         parent.getContentPane().add(packetLossButton);
     }
@@ -128,6 +128,10 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                 GlobalLogger.getInstance().log(Level.SEVERE, "Error occured while sending frame: {0}", exception.toString());
             }
             lastFrameQuality = qualityWorse;
+            // next frame will be based on the frame we jst sent
+            setSourceFrameIndex(currentFrameIndex);
+            // index for the next frame
+            currentFrameIndex++;
 
         } else {
             // this is the time we have to send one frame in seconds
@@ -144,10 +148,16 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                     GlobalLogger.getInstance().severe(exception.toString());
                 }
                 lastFrameQuality = qualityBetter;
+
+                // next frame will be based on the frame we jst sent
+                setSourceFrameIndex(currentFrameIndex);
+                // index for the next frame
+                currentFrameIndex++;
+
             } else if (bytesPossible < encodedFrameBetter.length && bytesPossible > encodedFrameWorse.length) {
                 // it seems like there is enough bandwidth for the worse quality
                 // but not enough for the better quality
-                
+
                 GlobalLogger.getInstance().log(Level.INFO, "Sending frame {0} with low quality ({1}) because it fits into possible bytes {2} with length: {3}", new Object[]{currentFrameIndex, qualityWorse, bytesPossible, encodedFrameBetter.length});
 
                 try {
@@ -156,18 +166,19 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
                     GlobalLogger.getInstance().severe(exception.toString());
                 }
                 lastFrameQuality = qualityWorse;
+                // next frame will be based on the frame we jst sent
+                setSourceFrameIndex(currentFrameIndex);
+                // index for the next frame
+                currentFrameIndex++;
             } else {
+                // if there is not enough bandwidth for any of these frames we will
+                // simply skip this one
                 GlobalLogger.getInstance().log(Level.INFO, "Dropping frame {0} because it does not fit into possible bytes {1} with length: {2}", new Object[]{currentFrameIndex, bytesPossible, encodedFrameBetter.length});
                 lastFrameQuality = qualityWorse - 5;
+                currentFrameIndex++;
             }
         }
 
-        // if there is not enough bandwidth for any of these frames we will
-        // simply skip this one
-        // next frame will be based on the frame we jst sent
-        setSourceFrameIndex(currentFrameIndex);
-        // index for the next frame
-        currentFrameIndex++;
     }
 
     @Override
@@ -191,9 +202,6 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             index--;
         }
 
-        
-
-        
         // the result of the above might be -1 --> we have no basis yet
         // everything else means that is our new basis
         setSourceFrameIndex(index);
@@ -202,10 +210,10 @@ public class SalsifySenderCore implements ISalsifySenderCore, IWebcamListener, I
             lastFrameQuality = lastFrameQuality - 20;
         } else {
             lastFrameQuality = 0;
-        }   
-        
+        }
+
         GlobalLogger.getInstance().log(Level.INFO, "Received reset notification (duplicate ack). Resetting to source with index {0} and quality {1}.", new Object[]{index, lastFrameQuality});
-        
+
         // also tell sender to reset
         sender.resetSender();
     }
